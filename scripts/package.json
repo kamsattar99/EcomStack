@@ -1,0 +1,20 @@
+{
+  "name": "@workspace/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "hello": "tsx ./src/hello.ts",
+    "seed:ecomstack": "tsx ./src/seed-ecomstack.ts",
+    "seed:ecomstack-assets": "tsx ./src/seed-ecomstack-assets.ts",
+    "admin:grant": "tsx ./src/grant-admin.ts",
+    "impact:sync": "tsx ./src/impact-sync.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "drizzle-orm": "catalog:",
+    "tsx": "catalog:",
+    "@workspace/db": "workspace:*"
+  }
+}

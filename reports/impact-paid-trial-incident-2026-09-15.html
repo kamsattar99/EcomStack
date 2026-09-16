@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shopify paid-trial attribution report — EcomStack</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f5f1;color:#202923;font:16px/1.65 system-ui,sans-serif}main{max-width:980px;margin:40px auto;background:white;padding:56px;border:1px solid #dce3de;border-radius:12px}h1{font-size:36px;line-height:1.2;margin:12px 0 18px}h2{font-size:23px;margin-top:38px;border-bottom:1px solid #dce3de;padding-bottom:10px}h3{font-size:18px}small,.muted{color:#59665e}.eyebrow{color:#087a51;font-weight:700;letter-spacing:.1em;font-size:12px;text-transform:uppercase}.notice{background:#fff7de;border-left:4px solid #c79420;padding:20px;margin:26px 0}.summary{background:#eff7f2;padding:24px;border-radius:8px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.stat{border:1px solid #dce3de;padding:16px;border-radius:8px}.stat strong{display:block;font-size:32px;color:#087a51}.stat span{font-size:13px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:12px;border-bottom:1px solid #dce3de;vertical-align:top}th{background:#f1f5f2}code{overflow-wrap:anywhere;font-size:13px;background:#f1f5f2;padding:2px 5px}li{margin:8px 0}a{color:#087a51;overflow-wrap:anywhere}.quote{border:1px solid #dce3de;padding:24px;background:#fafbf9}.footer{margin-top:40px;border-top:1px solid #dce3de;padding-top:18px;font-size:12px;color:#59665e}@media(max-width:700px){main{margin:0;padding:24px;border-radius:0}h1{font-size:29px}.stats{grid-template-columns:repeat(2,1fr)}table{font-size:12px}td,th{padding:8px}}@media print{body{background:white}main{margin:0;border:0;padding:12px}h2,h3{break-after:avoid}.stats,.notice,.quote{break-inside:avoid}a{color:inherit}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">EcomStack · Technical incident report</div>
+<h1>Shopify paid-trial attribution and verification issue</h1>
+<p><strong>Store:</strong> <code>jgz0ax-ua.myshopify.com</code><br>
+<strong>Report date:</strong> September 15, 2026<br>
+<strong>Latest evidence check:</strong> 2:51:54 PM Eastern / 18:51:54 UTC<br>
+<strong>Status:</strong> Unresolved — account-level attribution not proven; automatic verification disabled.</p>
+
+<section class="summary">
+<strong>Executive summary</strong>
+<p>The store owner reports completing Shopify’s paid trial after using their EcomStack account’s tracked affiliate link. The Impact Partner API is reachable and returns Shopify conversion events, including paid-trial events. However, the latest inspected records contain no values in the four supported attribution fields, so EcomStack cannot match a conversion to this account.</p>
+<p>Separately, EcomStack’s automated grant-processing sync is disabled by configuration. There is no persisted successful sync checkpoint. This is not simply a broken API connection: it is an unproven attribution path combined with an inactive automatic verification process.</p>
+</section>
+<div class="stats">
+<div class="stat"><strong>34</strong><span>Shopify events inspected</span></div>
+<div class="stat"><strong>6</strong><span>Paid-trial events</span></div>
+<div class="stat"><strong>0</strong><span>Events with supported tracking fields populated</span></div>
+<div class="stat"><strong>0</strong><span>Events matching the local account’s claim</span></div>
+</div>
+<p class="muted">Scope: Shopify campaign records updated between September 12, 2026 at 18:51:54 UTC and September 15, 2026 at 18:51:54 UTC. All pages in this query were processed. These are an update-time reporting window, not a list of signups that necessarily occurred during that period.</p>
+
+<h2>1. Affected journey and expected result</h2>
+<ol>
+<li>A signed-in EcomStack member opens the Shopify signup button.</li>
+<li>EcomStack creates or reuses a private, opaque account claim and appends it as <code>subId1</code> to <code>https://shopify.pxf.io/the-ecom-king</code>.</li>
+<li>The member completes an eligible Shopify paid trial.</li>
+<li>Impact reports the configured Shopify Paid Trial event with that same claim in <code>SubId1</code>.</li>
+<li>When verification is approved and enabled, EcomStack matches the campaign, paid-trial event, accepted state and exact claim, then grants access once.</li>
+</ol>
+<p><strong>Actual result:</strong> the local claim remains <code>started</code>, no matching event has been observed, and no active access grant exists.</p>
+
+<h2>2. Confirmed evidence</h2>
+<table>
+<thead><tr><th>Item</th><th>Observed result</th><th>Meaning / limitation</th></tr></thead>
+<tbody>
+<tr><td>Payment completion</td><td>Reported by the store owner</td><td>No independent Shopify billing confirmation was retrieved.</td></tr>
+<tr><td>Store identity</td><td><code>jgz0ax-ua.myshopify.com</code>, supplied by the owner</td><td>No authoritative store-domain-to-Impact-action lookup has been performed.</td></tr>
+<tr><td>Impact connectivity</td><td>Live read-only Partner API requests succeed</td><td>API authentication is working; this does not prove this referral was attributed.</td></tr>
+<tr><td>Campaign</td><td><code>13624</code> — Shopify</td><td>Observed in the account’s reporting.</td></tr>
+<tr><td>Qualifying event configuration</td><td><code>34051</code> — Paid Trial; accepted state <code>PENDING</code></td><td>Free Trial and Full Price Shop are different events and do not qualify under the current rule.</td></tr>
+<tr><td>Claim</td><td>One local claim; created September 15 at 17:49:53 UTC; status <code>started</code></td><td>The private claim value is intentionally excluded from this report.</td></tr>
+<tr><td>Latest API sample</td><td>34 actions; 6 Paid Trial actions</td><td>The six actions cannot be assigned to the reported store based on the fields inspected.</td></tr>
+<tr><td>Supported tracking fields</td><td><code>SubId1</code>, <code>SubId2</code>, <code>SubId3</code>, <code>SharedId</code>: all empty in the 34 inspected records</td><td>No user-level match can be established through these fields.</td></tr>
+<tr><td>Automatic processing</td><td>Verification, tracking-confirmed and incentive-approved flags are all false; no checkpoint record</td><td>Automatic unlocking is disabled. A five-minute interval setting alone does not start a scheduler.</td></tr>
+</tbody>
+</table>
+<div class="notice"><strong>Important:</strong> “No matching tracking ID” does not establish that Impact lost the signup. The reported store could be absent from the sample, awaiting reporting, or represented by an event with missing attribution fields. The available evidence cannot distinguish these possibilities.</div>
+
+<h2>3. Timeline</h2>
+<table><thead><tr><th>When</th><th>Finding or change</th></tr></thead><tbody>
+<tr><td>September 14</td><td>Initial API request-format issue was corrected: whole-second UTC dates succeeded where fractional-second dates were rejected. A 30-day sample returned 371 actions with no populated supported claim fields.</td></tr>
+<tr><td>September 15, before payment confirmation</td><td>The supplied affiliate link was configured. Both the original URL and a synthetic tracked URL were checked: they redirected through Impact to <code>www.shopify.com/commerce-coach/kamilsattar</code> with a successful final HTTP response.</td></tr>
+<tr><td>September 15</td><td>The owner reported <code>ERR_TUNNEL_CONNECTION_FAILED</code>. Server-side reachability checks succeeded; the exact cause of that browser/network error was not established.</td></tr>
+<tr><td>September 15</td><td>External navigation was changed to a separate tab with a backup link and visible errors. Repeat clicks now reuse the claim instead of being blocked for ten minutes.</td></tr>
+<tr><td>September 15</td><td>The owner confirmed payment. The Verify endpoint was found to only update a timestamp; it was changed to perform a real read-only Impact evidence check while automatic verification remains disabled.</td></tr>
+<tr><td>2:42 PM Eastern</td><td>34 Shopify actions inspected; no claim match.</td></tr>
+<tr><td>2:51:54 PM Eastern</td><td>Fresh check: 34 actions, 6 paid-trial actions, no populated supported tracking fields, no claim match, no active access grant.</td></tr>
+</tbody></table>
+
+<h2>4. Cause assessment</h2>
+<h3>Confirmed application-side blockers</h3>
+<ul>
+<li><strong>Automatic sync is intentionally disabled.</strong> Required verification and approval flags are false. The worker will not process grants in this state.</li>
+<li><strong>No successful automated sync is evidenced.</strong> The workspace database contains no sync checkpoint. A scheduled production worker has not been established by this investigation.</li>
+<li><strong>The original Verify implementation was incomplete.</strong> It refreshed a timestamp instead of querying Impact. That defect has been corrected, but the correction does not create missing attribution data.</li>
+</ul>
+<h3>Unresolved attribution questions — not established causes</h3>
+<ul>
+<li>Has Shopify’s paid-trial event for this exact store reached Impact yet?</li>
+<li>Does this Shopify campaign preserve and return partner-supplied <code>subId1</code> on Paid Trial actions?</li>
+<li>Did the claim survive the actual user’s entire alias/redirect/signup journey? A successful redirect-chain test alone does not prove parameter persistence or conversion attribution.</li>
+<li>Was the conversion attributed to a different referral source, excluded by eligibility rules, or reported through another field/report?</li>
+<li>Does the API response expose the required field in a different shape or endpoint? The checks inspected the adapter’s four top-level supported attribution fields, not every possible report.</li>
+</ul>
+
+<h2>5. Current Verify button behavior</h2>
+<p>The signed-in member’s button now checks the Impact reporting window for their server-stored claim, with a one-minute check limit. It distinguishes no observed match, a related but nonqualifying event, and a qualifying paid-trial match. When automatic verification is disabled, this is a <strong>read-only evidence check</strong>; it does not grant access even if a match appears.</p>
+<p>Type checks and fixture tests passed for absent, free-trial, qualifying, reversed and unrelated-account events, plus a provider authentication error. These checks do not replace a successful live paid-trial attribution test.</p>
+
+<h2>6. Required investigation and resolution</h2>
+<ol>
+<li><strong>Locate the store’s actual conversion.</strong> Ask Shopify/Impact to trace <code>jgz0ax-ua.myshopify.com</code> and confirm whether a Paid Trial action exists, its attribution destination, state and reporting time. Provide the exact payment time privately if requested.</li>
+<li><strong>Confirm the supported tracking contract.</strong> Establish whether <code>subId1 → SubId1</code> is supported on campaign <code>13624</code>, event <code>34051</code>. Obtain the authoritative reporting endpoint/field if another mapping is required.</li>
+<li><strong>Compare the exact claim securely.</strong> Verify the returned value against the local claim without placing it or credentials in public logs or support documents.</li>
+<li><strong>Confirm the incentive is permitted.</strong> Validate the affiliate program’s approval for unlocking a resource library as a referral incentive. Do not treat technical attribution as commercial approval.</li>
+<li><strong>Enable verification only after proof and approval.</strong> Then run the transactional sync and confirm exactly one entitlement is issued to the correct member.</li>
+<li><strong>Configure durable recurring execution.</strong> Schedule the worker against the intended environment’s database and secrets, and demonstrate successful checkpoints, failure visibility and safe duplicate processing.</li>
+</ol>
+<p><strong>Do not repeat the purchase to diagnose this incident.</strong> Keep the existing store, claim and payment evidence. Do not manually label the account “verified” solely on the owner’s payment statement.</p>
+
+<h2>7. Support-ready investigation summary</h2>
+<div class="quote">
+<p><strong>Subject: Investigate paid-trial attribution and missing SubId1 — Shopify campaign 13624</strong></p>
+<p>A user reports completing a Shopify paid trial for <code>jgz0ax-ua.myshopify.com</code> on September 15, 2026 after clicking <code>https://shopify.pxf.io/the-ecom-king</code> with an opaque account-specific <code>subId1</code> parameter.</p>
+<p>Our authenticated Impact Partner Actions API check at 18:51:54 UTC inspected all pages for a three-day updated-date window. It returned 34 Shopify actions, including 6 actions for Paid Trial tracker <code>34051</code>, but none had values in SubId1, SubId2, SubId3 or SharedId. We cannot identify which event, if any, belongs to this store.</p>
+<p>Please confirm whether the store’s paid-trial conversion was received and attributed, whether this campaign supports returning partner SubId1 values on Paid Trial actions, and which endpoint/field should be used for a reliable account-level match. Please also identify any eligibility or reporting-delay issue affecting this store. The exact claim can be supplied securely if needed; no API credentials should be requested in the support thread.</p>
+</div>
+
+<h2>8. Scope and evidence sources</h2>
+<ul>
+<li>Owner statements and screenshots supplied in the project conversation.</li>
+<li>Live, read-only Impact Partner Actions API requests; no conversion was created or modified.</li>
+<li>Workspace/development PostgreSQL settings, claim, grant and checkpoint inspection. <strong>No production database audit was performed.</strong></li>
+<li>Application review: <code>routes/claims.ts</code>, <code>lib/impact.ts</code>, <code>lib/claim-evidence.ts</code>, <code>lib/sync.ts</code> and the member unlock page.</li>
+</ul>
+<div class="footer">Prepared for the project owner. Store domain included at the owner’s request. API credentials, account SID, member identity and private tracking ID are excluded. This report records evidence as of the timestamp above; it does not assert a confirmed Impact outage or guarantee referral eligibility. Use your browser’s Print → Save as PDF to export a PDF copy.</div>
+</main></body></html>

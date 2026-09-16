@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "EcomStack"
+description = "A protected ecommerce prompt, skill and playbook library with Shopify referral verification and a private publishing dashboard."
+version = "1.0.0"
+id = "artifacts/ecomstack"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24152
+
+[services.development]
+run = "pnpm --filter @workspace/ecomstack run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ecomstack", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ecomstack/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24152"
+BASE_PATH = "/"

@@ -1,0 +1,141 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EcomStack — completed Impact investigation</title><style>
+body{font:16px/1.65 system-ui,sans-serif;color:#23342b;background:#f5f7f4;margin:0}main{max-width:1000px;margin:30px auto;background:white;padding:48px;border:1px solid #dce5df}h1{font-size:32px;line-height:1.2}h2{font-size:23px;border-bottom:1px solid #dce5df;padding-bottom:8px;margin-top:32px}table{border-collapse:collapse;width:100%;font-size:14px}td,th{padding:12px;border:1px solid #dce5df;text-align:left;vertical-align:top}th{background:#edf5ef}pre{white-space:pre-wrap;background:#f0f4f1;padding:20px;font-size:13px}code{overflow-wrap:anywhere}li{margin:8px 0}.notice{background:#fff6dd;padding:20px;border-left:4px solid #bd931d}.message{border:1px solid #dce5df;padding:24px}a{color:#08764e;overflow-wrap:anywhere}small{color:#58685e}@media(max-width:650px){main{margin:0;padding:22px}td,th{padding:7px}}@media print{body{background:white}main{border:0;margin:0;padding:0}h2{break-after:avoid}}
+</style></head><body><main>
+<small>Investigation and follow-up · September 15, 2026 · initial checks at approximately 19:00–19:06 UTC; completed click-export follow-up at approximately 20:10 UTC</small>
+<h1>Shopify paid-trial attribution: environment, raw actions and original click</h1>
+<p><strong>Reported store:</strong> <code>jgz0ax-ua.myshopify.com</code><br><strong>Production:</strong> <a href="https://ecom-stack.replit.app">https://ecom-stack.replit.app</a><br><strong>Result:</strong> No authoritative match to this store’s paid-trial action or original click was established. Automatic grants remain disabled.</p>
+<div class="notice"><strong>Correction to the earlier report:</strong> the previous checks compared Impact actions with the development claim. The tracking prefix visible in the owner’s failed-link screenshot uniquely matches a different, production-only claim. This investigation compared the raw reporting against both production claims using private fingerprints; no full claim values were printed.</div>
+
+<h2>1. Environment — completed</h2>
+<ul>
+<li>The deployment service confirms a public, successfully built autoscale deployment at the production URL above.</li>
+<li>Development contains one claim created at <strong>17:49:53 UTC</strong>. Production contains that same claim and owner identity, plus a second claim created at <strong>18:26:59 UTC</strong>. The databases are therefore distinct, not a single shared live store.</li>
+<li>The second claim uniquely matches the visible tracking prefix in the owner’s screenshot. This locates the photographed signup attempt in <strong>production</strong>. It does not independently prove which URL was used for the subsequent completed payment.</li>
+<li>Both production claims remain <code>started</code>. Production has zero active grants and no sync checkpoint records.</li>
+<li>Both environments expose the same affiliate destination and campaign/tracker configuration. Impact secrets are present in both environments; secret values were not retrieved or compared. Live Impact requests in this investigation used the workspace’s configured credentials.</li>
+<li>The production JavaScript bundle contains the separate-tab signup, backup link and updated verification-result UI. The exact deployed backend source revision is not exposed by a version endpoint, so byte-for-byte backend parity is not attested.</li>
+</ul>
+<p><strong>Environment defect fixed:</strong> a persisted <code>development: true</code> value was overriding the runtime environment after publication. This explains why the production API displayed development mode; it was not evidence that the production request used the development database. Public configuration now derives this flag from the runtime. A regression fixture confirms production cannot inherit development draft visibility. This workspace fix has <strong>not</strong> been published; publishing it will hide unpublished demo drafts in production as intended.</p>
+
+<h2>2. Outbound link — completed code and screenshot checks</h2>
+<p>The code uses the signed-in server-side member to create/reuse a claim and generates:</p>
+<pre>https://shopify.pxf.io/the-ecom-king?subId1=[PRIVATE_ACCOUNT_CLAIM]</pre>
+<ul>
+<li>Existing query parameters are preserved and conflicting copies of the configured tracking parameter are replaced.</li>
+<li>Repeated clicks reuse the same stored claim. A unique per-user constraint prevents separate claims from concurrent clicks.</li>
+<li>The visible backup signup link uses the exact server-returned tracked destination, not an untracked Shopify fallback.</li>
+<li>The owner’s screenshot proves that a production claim was present on the attempted outbound URL. It does not prove Impact received that request, retained its attribution through signup, or assigned the later purchase to it.</li>
+</ul>
+<p>No tracking-link formatting defect was established. Existing fixtures for parameter preservation, strict matching and safe destinations pass.</p>
+
+<h2>3. Raw Impact Actions — completed</h2>
+<p><strong>Endpoint:</strong> <code>GET /Mediapartners/{AccountSID}/Actions</code><br>
+<strong>Filters:</strong> campaign <code>13624</code>; StartDate <code>2026-09-12T00:00:00Z</code>; EndDate <code>2026-09-15T19:00:26Z</code>; no state filter.<br>
+<strong>Pagination:</strong> all pages processed: one page, 41 actions. This is a broader window than the earlier rolling 72-hour sample, so its count is not directly comparable to 34.</p>
+<table><tr><th>Tracker</th><th>State</th><th>Count</th></tr>
+<tr><td>26125 — Free Trial</td><td>PENDING</td><td>11</td></tr>
+<tr><td>34051 — Paid Trial</td><td>PENDING</td><td>6</td></tr>
+<tr><td>25717 — Full Price Shop</td><td>PENDING</td><td>19</td></tr>
+<tr><td>57792 — Retained Full Price Shops, 3 months</td><td>PENDING</td><td>3</td></tr>
+<tr><td>57793 — Retained Full Price Shops, 6 months</td><td>PENDING</td><td>2</td></tr></table>
+<p>All 41 raw action objects contain top-level <code>SubId1</code>, <code>SubId2</code>, <code>SubId3</code> and <code>SharedId</code> keys. Each value is an actual empty string. A recursive inspection of every raw record found no alternative nested claim, no match to either production claim and no store-domain match. Campaign, tracker and state field names agree with the adapter.</p>
+<p><strong>Redacted excerpt from an actual Paid Trial action:</strong></p>
+<pre>{
+  "Id": "[REDACTED — action not attributed to this user]",
+  "CampaignId": "13624",
+  "CampaignName": "Shopify",
+  "ActionTrackerId": "34051",
+  "ActionTrackerName": "Paid Trial",
+  "State": "PENDING",
+  "ReferringDate": "[REDACTED]",
+  "EventDate": "[REDACTED]",
+  "CreationDate": "[REDACTED]",
+  "Oid": "",
+  "SubId1": "",
+  "SubId2": "",
+  "SubId3": "",
+  "SharedId": ""
+}</pre>
+<p>This excerpt omits monetary, customer-location and URI fields. The complete structure was inspected in memory before redaction. No nested attribution object occurred in these Actions responses. <strong>No Actions parsing defect was found.</strong></p>
+<p>The API’s StartDate/EndDate filters select <strong>last-updated time</strong>. EventDate is conversion time; ReferringDate and CreationDate are separate fields. No conversion was assigned to the user based on any of those dates or an amount.</p>
+
+<h2>4. Original click and supplementary reports — completed available checks</h2>
+<p>Queried the account’s report inventory, read each selected report’s live metadata, and fetched all returned pages for September 15–16, 2026. All requests succeeded with the existing token. Private fingerprints were compared against all string values, including claim-shaped tokens embedded in strings.</p>
+<table><tr><th>Report ID</th><th>Result</th><th>Meaning</th></tr>
+<tr><td><code>partner_performance_by_subid</code></td><td>5 rows; no existing-claim match. Includes a Shopify row for the known synthetic connectivity-check ID.</td><td>Aggregate click reporting can preserve a supplied Sub ID. The synthetic diagnostic is not the owner’s signup. The supplied program filter did not eliminate unrelated programs; all rows were inspected and unrelated results were not used as user evidence.</td></tr>
+<tr><td><code>shopify_performance_by_subid_cohort</code></td><td>2 rows; no existing-claim match. Also exposes the known synthetic diagnostic ID.</td><td>Shopify-specific Sub ID reporting is available. It does not establish this user’s click or paid trial.</td></tr>
+<tr><td><code>partner_payable_click_data</code></td><td>0 rows.</td><td>This report is scoped to payable click data, not guaranteed to be an exhaustive log of every affiliate click. Zero rows do not prove that no click occurred.</td></tr>
+<tr><td><code>mp_action_listing_sku_shopify</code></td><td>10 rows; all four action tracking fields empty; no claim or store match.</td><td>The Shopify-specific detailed action report does not identify the store either. Its metadata advertises more columns than this response actually supplied.</td></tr>
+</table>
+<p>Report fields differ legitimately: the generic Sub ID report exposes <code>pubsubid1_</code>; Shopify reports expose <code>SubId1</code>. Those reports were inspected separately, not passed through the Actions adapter. Their different naming therefore does not explain the empty strings in the raw Actions endpoint.</p>
+<p><strong>Original click found?</strong> No individual click containing the owner’s existing claim was located in the accessible results. <strong>Specific paid-trial action identified?</strong> No. No authoritative click-to-action join is available from the evidence retrieved.</p>
+
+<h2>5. Follow-up: production execution, Partner Clicks and access blockers</h2>
+<p><strong>Correction:</strong> detailed click retrieval is also available in the official <strong>Partner API</strong>. The earlier advertiser-only conclusion was incorrect.</p>
+<pre>GET /Mediapartners/{AccountSID}/Clicks/{Id}</pre>
+<p>The ID is the original <code>im_ref</code> or <code>irclickid</code>. The current documentation describes <code>PartnerRelated</code> as an array of objects containing <code>SubId1</code>, <code>SubId2</code> and <code>SubId3</code>. This does not change the previously observed flat Partner Actions response.</p>
+<p><strong>Original ID recovery:</strong> no original click ID was recovered from the available uploaded screenshots, captured application/browser/deployment logs, stored claim/activity/referral data, or the previously retrieved reports. No HAR/network capture of the owner’s successful Shopify landing was available in the inspected files. Production deployment-log searches for im_ref, irclickid and landing/tracking URLs returned no matches. The claim and activity tables do not store landing URLs or click IDs. The production claim has two recorded signup-click activities but no recorded referral event. Neither a click count nor a claim-creation timestamp identifies the actual Impact click.</p>
+<p><strong>Additional existing-record export completed using workspace credentials:</strong></p>
+<pre>GET /Mediapartners/{AccountSID}/ClickExport
+    ?ProgramId=13624&amp;Date=2026-09-15&amp;ResultFormat=JSON
+→ HTTP 200, Status: QUEUED
+
+GET /Mediapartners/{AccountSID}/Jobs/{JobId}
+→ HTTP 403, {"title":"Access Denied","status":403}
+
+GET /Mediapartners/{AccountSID}/Jobs/{JobId}/Download
+→ HTTP 403, {"title":"Access Denied","status":403}</pre>
+<p>After enabling <strong>Jobs Management</strong> GET permissions, the same job was retried with the same configured credentials:</p>
+<pre>GET /Mediapartners/{AccountSID}/Jobs/{JobId}
+→ HTTP 200, COMPLETED, 30 records processed
+
+GET /Mediapartners/{AccountSID}/Jobs/{JobId}/Download
+→ HTTP 302 to an HTTPS Google Cloud Storage result URL
+→ HTTP 200 after following the signed result URL with no Impact credentials forwarded</pre>
+<p>This exports existing click records; it does not generate a new affiliate click or modify attribution. The result was downloaded only after Impact reported the job complete. It contained <strong>30</strong> records. One record contained a nonempty <code>SubId1</code>; neither production claim appeared anywhere in the records. No original ClickId for the production claim was identified. The nonmatching record is not attributed to this user and is not used as evidence.</p>
+<p><strong>Partner Clicks result:</strong> the exact original <code>im_ref</code>/<code>irclickid</code> is still unknown, so <code>GET /Mediapartners/{AccountSID}/Clicks/{Id}</code> was not called with a guessed ID or the synthetic-test ID. No permission failure has been established for that endpoint.</p>
+<p><strong>Production-backend execution remains incomplete:</strong> requests to the deployed app returned:</p>
+<pre>GET  https://ecom-stack.replit.app/api/admin/impact/status → 401
+POST https://ecom-stack.replit.app/api/claims/check        → 401</pre>
+<p>These requests lacked an authenticated production app session and did not reach the Impact handler. The available production database queries and deployment logs do not provide execution inside the deployed Node process or reveal its configured credentials. No auth bypass, user impersonation, public diagnostic endpoint or secret extraction was used.</p>
+<p>Therefore <strong>production’s Impact account identity has not been compared with the workspace account, and no fresh claim lookup using production’s credentials was completed</strong>. Secret existence in both environments is not evidence of account equality. The next application-side requirement is a securely authenticated production diagnostic that uses runtime credentials, returns only a safe account-identity comparison/fingerprint and redacted claim evidence, and never grants access. The current deployed diagnostics do not expose that account-comparison result.</p>
+<p><strong>Reporting time remains unresolved:</strong> the production claim was created at 18:26:59 UTC. The earlier 19:00:26 UTC Actions check was approximately <strong>33 minutes 27 seconds after claim creation</strong>, not after a verified payment time. The exact payment time has not been independently established. Reporting delay remains a possible explanation; no reporting deadline or guaranteed SLA has been established.</p>
+
+<h2>6. Automatic processing and verification</h2>
+<p>Production still has <code>verificationEnabled=false</code>, <code>trackingConfirmed=false</code> and <code>incentiveApproved=false</code>. There are no production sync checkpoints or active grants. The project has a worker command and five-minute interval setting, but no recurring worker execution was demonstrated. An external scheduler cannot be ruled out solely from code inspection.</p>
+<p>No live grants were enabled, no referrals were marked verified, no new store or purchase was made, and no new synthetic affiliate click was generated in this investigation. The only runtime fix was environment-flag handling. Scripts and API type checks passed; 14 fixture tests passed. Fixture results are not live attribution proof.</p>
+<p><strong>Smallest next steps:</strong> run the existing authenticated production diagnostic to compare partner-account identity and retry the production claim. The accessible Partner click export has now been completed and did not identify the original click. If production credentials also cannot identify the claim, Shopify/Impact must trace the store’s original click/action. No additional purchase is required.</p>
+
+<h2>7. Exact support message — prepared, not sent</h2>
+<div class="message">
+<p><strong>Subject: Partner Click Export job denied; trace existing Shopify paid trial if needed — campaign 13624</strong></p>
+<p>Please investigate the existing store <strong>jgz0ax-ua.myshopify.com</strong>. The owner reports completing the paid trial on September 15, 2026 after using our affiliate URL <strong>https://shopify.pxf.io/the-ecom-king</strong> with an opaque account-specific <strong>subId1</strong>.</p>
+<p>The photographed outbound link’s claim matches our production account claim created at <strong>18:26:59 UTC</strong>. We can provide the full claim securely. This is claim creation time, not payment time. The exact payment time is not independently established, and the earlier Actions check at 19:00:26 UTC was only approximately 33 minutes after claim creation. Reporting delay remains unresolved.</p>
+<p>At approximately 19:00 UTC, the Partner Actions endpoint for campaign <strong>13624</strong>, updated-date range September 12 at 00:00 UTC through September 15 at 19:00:26 UTC, returned 41 actions across all pages, including 6 <strong>Paid Trial / tracker 34051 / PENDING</strong> actions. Every raw action contained empty SubId1, SubId2, SubId3 and SharedId fields. We did not infer that any of these six actions belongs to this store.</p>
+<p>We also checked Performance by Sub ID and Shared ID, Shopify Performance by SubID (Cohort), Payable Click Data and Shopify Advanced Action Listing for September 15–16. None returned our production claim. The aggregate reports did show a separate known synthetic connectivity-test ID, demonstrating that some partner Sub ID reporting is available. Payable Click Data returned zero rows; we understand it may not cover all clicks.</p>
+<p>We requested <strong>GET /Mediapartners/{AccountSID}/ClickExport?ProgramId=13624&amp;Date=2026-09-15&amp;ResultFormat=JSON</strong>. After enabling Jobs Management read permissions, its status was HTTP 200 COMPLETED with 30 records processed. The exact ResultUri downloaded successfully through its signed HTTPS storage redirect without forwarding Impact credentials. The 30 records contained one nonempty SubId1 but neither production claim, and no original ClickId for this store was identified.</p>
+<p>We have confirmed the documented Partner <strong>GET /Mediapartners/{AccountSID}/Clicks/{Id}</strong> endpoint and its PartnerRelated tracking fields. We have not recovered the original im_ref/irclickid from our captured evidence, and have not substituted the synthetic click. If the export still cannot recover the original click, please trace this existing store.</p>
+<p>All successful Impact calls made by this investigation used workspace-configured credentials. Our separate production-backend diagnostic is blocked by app authentication; production and workspace Impact account equality is not yet verified. Please do not interpret the workspace results as a completed production-credential investigation.</p>
+<p>Please:</p>
+<ol>
+<li>Trace this existing store and identify its Paid Trial ActionId, state and credited partner, or explain why no qualifying action exists.</li>
+<li>Identify the associated original ClickId/im_ref and confirm the SubId1 recorded on that click.</li>
+<li>Confirm whether that exact SubId1 is available on the Paid Trial action, and specify the authoritative Partner API endpoint/report and field mapping.</li>
+<li>If the original claim was not retained, identify where attribution was lost or whether eligibility, reporting delay or another referral source explains the outcome.</li>
+<li>Trace the existing store’s original im_ref/irclickid and paid-trial action because the completed September 15 click export did not contain either production claim.</li>
+</ol>
+<p>We are not requesting another purchase, broad advertiser access or a manual conversion attribution change. Our automatic grants remain disabled until an exact live match and affiliate-incentive approval are confirmed. No API secret should be included in this support thread.</p>
+</div>
+
+<h2>Official references</h2>
+<ul>
+<li><a href="https://integrations.impact.com/partner-api-reference/partner-v14/reference/actions/actions">Partner Actions: fields and date semantics</a></li>
+<li><a href="https://integrations.impact.com/partner-api-reference/partner-v14/reference/reports/reports">Partner Reports: inventory, metadata and execution</a></li>
+<li><a href="https://integrations.impact.com/brand-api-reference/reference/clicks/clicks">Brand Click Details: endpoint and PartnerRelated fields</a></li>
+<li><a href="https://integrations.impact.com/partner-api-reference/reference/clicks/clicks">Partner Click Details: endpoint and PartnerRelated array</a></li>
+<li><a href="https://integrations.impact.com/partner-api-reference/reference/clicks/click-export">Partner Click Export</a></li>
+<li><a href="https://integrations.impact.com/partner-api-reference/reference/jobs-management/jobs">Partner Jobs: status and download</a></li>
+<li><a href="https://help.impact.com/other/reference-documentation/api-access-tokens-and-changelog/scoped-tokens-best-practices">Scoped tokens: endpoint and HTTP-method permissions</a></li>
+</ul>
+<small>Credentials, full claim values, user identities, unrelated conversion IDs and customer details are excluded. This report supplements and corrects the environment scope of the earlier incident report. Open in a browser and use Print → Save as PDF if needed.</small>
+</main></body></html>

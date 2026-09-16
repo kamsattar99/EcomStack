@@ -1,0 +1,20 @@
+{
+  "brandName": "EcomStack",
+  "tagline": "AI skills, prompts and playbooks for ecommerce.",
+  "logoUrl": "",
+  "supportEmail": "",
+  "offerTitle": "Start your Shopify paid trial",
+  "offerDescription": "Review Shopify's current offer and eligibility before signing up.",
+  "eligibility": "Start an eligible Shopify paid trial through our tracked affiliate link. Existing stores and signups outside this link do not automatically qualify.",
+  "affiliateDisclosure": "We may earn a commission if you sign up through our Shopify affiliate link.",
+  "affiliateUrl": "",
+  "campaignId": "13624",
+  "eventTrackerId": "34051",
+  "outboundParameter": "subId1",
+  "returnedField": "SubId1",
+  "acceptedStates": ["PENDING"],
+  "syncIntervalMinutes": 5,
+  "verificationEnabled": false,
+  "trackingConfirmed": false,
+  "incentiveApproved": false
+}

@@ -1,0 +1,2438 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Api",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "healthCheck",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/site": {
+      "get": {
+        "operationId": "getSite",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/resources": {
+      "get": {
+        "operationId": "listResources",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Library"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/resources/{slug}": {
+      "get": {
+        "operationId": "getResource",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResourceDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/resources/{slug}/content": {
+      "get": {
+        "operationId": "getResourceContent",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProtectedContent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/resources/{slug}/bookmark": {
+      "put": {
+        "operationId": "setBookmark",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookmarkInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/resources/{slug}/activity": {
+      "post": {
+        "operationId": "recordResourceActivity",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "getMember",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Member"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/me/profile": {
+      "put": {
+        "operationId": "updateMemberProfile",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberProfileInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid profile"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/claims/start": {
+      "post": {
+        "operationId": "startClaim",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/onboarding/complete": {
+      "post": {
+        "operationId": "completeOnboarding",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required"
+          }
+        }
+      }
+    },
+    "/claims/check": {
+      "post": {
+        "operationId": "checkClaim",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/support": {
+      "post": {
+        "operationId": "createSupportRequest",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/overview": {
+      "get": {
+        "operationId": "getAdminOverview",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/resources": {
+      "get": {
+        "operationId": "listAdminResources",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Resource"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createResource",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/resources/{id}": {
+      "get": {
+        "operationId": "getAdminResource",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateResource",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserSummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/access": {
+      "post": {
+        "operationId": "changeAccess",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GrantInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/support": {
+      "get": {
+        "operationId": "listSupportRequests",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupportRequest"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/support/{id}": {
+      "patch": {
+        "operationId": "updateSupportRequest",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/settings": {
+      "get": {
+        "operationId": "getAdminSettings",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateSettings",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/impact/status": {
+      "get": {
+        "operationId": "getSyncStatus",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/impact/diagnostic": {
+      "post": {
+        "operationId": "runImpactDiagnostic",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/impact/sync": {
+      "post": {
+        "operationId": "runImpactSync",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/taxonomies": {
+      "get": {
+        "operationId": "listTaxonomies",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Taxonomy"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTaxonomy",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Taxonomy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/taxonomies/{id}": {
+      "put": {
+        "operationId": "updateTaxonomy",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Taxonomy"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTaxonomy",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/assets/upload": {
+      "post": {
+        "operationId": "requestAssetUpload",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/assets/confirm": {
+      "post": {
+        "operationId": "confirmAsset",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetConfirm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Asset"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/admin/assets/{id}": {
+      "delete": {
+        "operationId": "deleteAsset",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
+    "/assets/{id}/download": {
+      "get": {
+        "operationId": "downloadAsset",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized file stream",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthStatus": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "Taxonomy": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "category",
+              "tool",
+              "tag"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ]
+      },
+      "Asset": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "resourceId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "contentType",
+          "size",
+          "resourceId",
+          "kind"
+        ]
+      },
+      "Resource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Prompt",
+              "Skill",
+              "Cheat Sheet"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preview": {
+            "type": "string"
+          },
+          "useCase": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "tutorialUrl": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "isFree": {
+            "type": "boolean"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "isDemo": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "coverUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "description",
+          "type",
+          "category",
+          "tool",
+          "tags",
+          "preview",
+          "useCase",
+          "instructions",
+          "tutorialUrl",
+          "version",
+          "isFree",
+          "featured",
+          "isDemo",
+          "status",
+          "updatedAt",
+          "coverUrl"
+        ]
+      },
+      "ResourceInput": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Prompt",
+              "Skill",
+              "Cheat Sheet"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preview": {
+            "type": "string"
+          },
+          "useCase": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "tutorialUrl": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "isFree": {
+            "type": "boolean"
+          },
+          "featured": {
+            "type": "boolean"
+          },
+          "isDemo": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "coverUrl": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "title",
+          "description",
+          "type",
+          "category",
+          "tool",
+          "preview",
+          "content",
+          "status",
+          "isFree"
+        ]
+      },
+      "ResourceDetail": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          },
+          "canAccess": {
+            "type": "boolean"
+          },
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "resource",
+          "related",
+          "canAccess",
+          "saved"
+        ]
+      },
+      "ProtectedContent": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            }
+          }
+        },
+        "required": [
+          "content",
+          "instructions",
+          "assets"
+        ]
+      },
+      "SiteSettings": {
+        "type": "object",
+        "properties": {
+          "brandName": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "supportEmail": {
+            "type": "string"
+          },
+          "offerTitle": {
+            "type": "string"
+          },
+          "offerDescription": {
+            "type": "string"
+          },
+          "eligibility": {
+            "type": "string"
+          },
+          "affiliateDisclosure": {
+            "type": "string"
+          },
+          "affiliateReady": {
+            "type": "boolean"
+          },
+          "verificationEnabled": {
+            "type": "boolean"
+          },
+          "development": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "brandName",
+          "tagline",
+          "logoUrl",
+          "supportEmail",
+          "offerTitle",
+          "offerDescription",
+          "eligibility",
+          "affiliateDisclosure",
+          "affiliateReady",
+          "verificationEnabled",
+          "development"
+        ]
+      },
+      "Library": {
+        "type": "object",
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "taxonomies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Taxonomy"
+            }
+          }
+        },
+        "required": [
+          "resources",
+          "total",
+          "taxonomies"
+        ]
+      },
+      "Member": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin"
+            ]
+          },
+          "hasAccess": {
+            "type": "boolean"
+          },
+          "accessSource": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "onboardingCompleted": {
+            "type": "boolean"
+          },
+          "claimStatus": {
+            "type": "string"
+          },
+          "lastCheckedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resumeSlug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "savedResources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          },
+          "recentResources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Resource"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "hasAccess",
+          "accessSource",
+          "onboardingCompleted",
+          "claimStatus",
+          "lastCheckedAt",
+          "resumeSlug",
+          "savedResources",
+          "recentResources"
+        ]
+      },
+      "MemberProfileInput": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320
+          },
+          "countryCode": {
+            "type": "string",
+            "pattern": "^\\+[0-9]{1,4}$"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[0-9]{7,15}$"
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "countryCode",
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "BookmarkInput": {
+        "type": "object",
+        "properties": {
+          "saved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "saved"
+        ]
+      },
+      "ClaimInput": {
+        "type": "object",
+        "properties": {
+          "resourceSlug": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "ClaimResult": {
+        "type": "object",
+        "properties": {
+          "redirectUrl": {
+            "type": "string"
+          },
+          "claimStatus": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "redirectUrl",
+          "claimStatus"
+        ]
+      },
+      "SupportInput": {
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "message"
+        ]
+      },
+      "SupportRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "userId",
+          "subject",
+          "message",
+          "status",
+          "createdAt"
+        ]
+      },
+      "SupportUpdate": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "UserSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "hasAccess": {
+            "type": "boolean"
+          },
+          "claimStatus": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phoneCountryCode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phoneNumber": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "onboardingCompleted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "createdAt",
+          "hasAccess",
+          "claimStatus",
+          "fullName",
+          "email",
+          "phoneCountryCode",
+          "phoneNumber",
+          "onboardingCompleted"
+        ]
+      },
+      "GrantInput": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "grant",
+              "revoke"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "action",
+          "reason"
+        ]
+      },
+      "Audit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "actorId": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "actorId",
+          "action",
+          "reason",
+          "createdAt"
+        ]
+      },
+      "AdminOverview": {
+        "type": "object",
+        "properties": {
+          "registeredUsers": {
+            "type": "number"
+          },
+          "signupClicks": {
+            "type": "number"
+          },
+          "onboardingCompletions": {
+            "type": "number"
+          },
+          "verifiedPaidTrials": {
+            "type": "number"
+          },
+          "accountsWithAccess": {
+            "type": "number"
+          },
+          "resourceCopies": {
+            "type": "number"
+          },
+          "resourceDownloads": {
+            "type": "number"
+          },
+          "resources": {
+            "type": "number"
+          },
+          "openSupportRequests": {
+            "type": "number"
+          },
+          "audit": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Audit"
+            }
+          }
+        },
+        "required": [
+          "registeredUsers",
+          "signupClicks",
+          "verifiedPaidTrials",
+          "accountsWithAccess",
+          "onboardingCompletions",
+          "resourceCopies",
+          "resourceDownloads",
+          "resources",
+          "openSupportRequests",
+          "audit"
+        ]
+      },
+      "AdminResource": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "content": {
+            "type": "string"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            }
+          }
+        },
+        "required": [
+          "resource",
+          "content",
+          "assets"
+        ]
+      },
+      "SettingsInput": {
+        "type": "object",
+        "properties": {
+          "brandName": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "supportEmail": {
+            "type": "string"
+          },
+          "offerTitle": {
+            "type": "string"
+          },
+          "offerDescription": {
+            "type": "string"
+          },
+          "eligibility": {
+            "type": "string"
+          },
+          "affiliateDisclosure": {
+            "type": "string"
+          },
+          "affiliateReady": {
+            "type": "boolean"
+          },
+          "verificationEnabled": {
+            "type": "boolean"
+          },
+          "development": {
+            "type": "boolean"
+          },
+          "affiliateUrl": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "eventTrackerId": {
+            "type": "string"
+          },
+          "outboundParameter": {
+            "type": "string",
+            "enum": [
+              "subId1",
+              "subId2",
+              "subId3",
+              "sharedId"
+            ]
+          },
+          "returnedField": {
+            "type": "string",
+            "enum": [
+              "SubId1",
+              "SubId2",
+              "SubId3",
+              "SharedId"
+            ]
+          },
+          "acceptedStates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED"
+              ]
+            }
+          },
+          "syncIntervalMinutes": {
+            "type": "number"
+          },
+          "trackingConfirmed": {
+            "type": "boolean"
+          },
+          "incentiveApproved": {
+            "type": "boolean"
+          }
+        },
+        "required": []
+      },
+      "AdminSettings": {
+        "type": "object",
+        "properties": {
+          "brandName": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "supportEmail": {
+            "type": "string"
+          },
+          "offerTitle": {
+            "type": "string"
+          },
+          "offerDescription": {
+            "type": "string"
+          },
+          "eligibility": {
+            "type": "string"
+          },
+          "affiliateDisclosure": {
+            "type": "string"
+          },
+          "affiliateReady": {
+            "type": "boolean"
+          },
+          "verificationEnabled": {
+            "type": "boolean"
+          },
+          "development": {
+            "type": "boolean"
+          },
+          "affiliateUrl": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "eventTrackerId": {
+            "type": "string"
+          },
+          "outboundParameter": {
+            "type": "string",
+            "enum": [
+              "subId1",
+              "subId2",
+              "subId3",
+              "sharedId"
+            ]
+          },
+          "returnedField": {
+            "type": "string",
+            "enum": [
+              "SubId1",
+              "SubId2",
+              "SubId3",
+              "SharedId"
+            ]
+          },
+          "acceptedStates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED"
+              ]
+            }
+          },
+          "syncIntervalMinutes": {
+            "type": "number"
+          },
+          "trackingConfirmed": {
+            "type": "boolean"
+          },
+          "incentiveApproved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "brandName",
+          "tagline",
+          "logoUrl",
+          "supportEmail",
+          "offerTitle",
+          "offerDescription",
+          "eligibility",
+          "affiliateDisclosure",
+          "affiliateReady",
+          "verificationEnabled",
+          "development",
+          "affiliateUrl",
+          "campaignId",
+          "eventTrackerId",
+          "outboundParameter",
+          "returnedField",
+          "acceptedStates",
+          "syncIntervalMinutes",
+          "trackingConfirmed",
+          "incentiveApproved"
+        ]
+      },
+      "DiagnosticRecord": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "campaignName": {
+            "type": "string"
+          },
+          "eventTrackerId": {
+            "type": "string"
+          },
+          "eventTrackerName": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "hasSubId1": {
+            "type": "boolean"
+          },
+          "hasSubId2": {
+            "type": "boolean"
+          },
+          "hasSubId3": {
+            "type": "boolean"
+          },
+          "hasSharedId": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "campaignId",
+          "campaignName",
+          "eventTrackerId",
+          "eventTrackerName",
+          "state",
+          "hasSubId1",
+          "hasSubId2",
+          "hasSubId3",
+          "hasSharedId"
+        ]
+      },
+      "SyncStatus": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "credentialsPresent": {
+            "type": "boolean"
+          },
+          "lastCheckedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastSuccessAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "nextCheckAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticRecord"
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "credentialsPresent",
+          "lastCheckedAt",
+          "lastSuccessAt",
+          "nextCheckAt",
+          "error",
+          "records",
+          "message"
+        ]
+      },
+      "UploadInput": {
+        "type": "object",
+        "properties": {
+          "resourceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "contentType": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "cover"
+            ]
+          }
+        },
+        "required": [
+          "resourceId",
+          "name",
+          "size",
+          "contentType",
+          "kind"
+        ]
+      },
+      "UploadResult": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "uploadURL": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "uploadURL"
+        ]
+      },
+      "AssetConfirm": {
+        "type": "object",
+        "properties": {
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ]
+      },
+      "TaxonomyInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "category",
+              "tool",
+              "tag"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "kind"
+        ]
+      },
+      "ActivityInput": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "copy"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    }
+  }
+}

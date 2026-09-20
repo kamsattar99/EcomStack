@@ -69,7 +69,7 @@ export default function SignUpAuthPage() {
                 fallbackRedirectUrl={`${basePath}/unlock`}
                 appearance={{
                   elements: {
-                    rootBox: "w-full",
+                    rootBox: "!flex !w-full !justify-center",
                     cardBox: "!w-full !max-w-[590px] !overflow-hidden !rounded-[24px] !border !border-[#dfe7df] !bg-white !shadow-[0_18px_50px_rgba(25,60,54,0.10)]",
                     card: "!w-full !rounded-none !border-0 !bg-transparent !p-8 !shadow-none max-sm:!p-5",
                     header: "!hidden",

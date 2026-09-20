@@ -19,6 +19,7 @@ export * from './audit';
 export * from './bookmarkInput';
 export * from './claimInput';
 export * from './claimResult';
+export * from './deletionResult';
 export * from './diagnosticRecord';
 export * from './errorResponse';
 export * from './errorResponseFields';

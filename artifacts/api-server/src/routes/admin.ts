@@ -5,7 +5,7 @@ import { accessGrantsTable, activityTable, assetsTable, auditTable, claimsTable,
 import {
   ChangeAccessBody, CreateResourceBody, CreateResourceResponse, CreateTaxonomyBody, GetAdminOverviewResponse,
   GetAdminResourceParams, GetAdminResourceResponse, GetAdminSettingsResponse, GetSyncStatusResponse, ListAdminResourcesResponse,
-  ImportResourceFromUrlBody, ImportResourceFromUrlResponse, ListSupportRequestsResponse, ListTaxonomiesResponse, ListUsersResponse, UpdateResourceBody, UpdateResourceParams,
+  ImportResourceFromUrlBody, ImportResourceFromUrlResponse, ListSupportRequestsResponse, ListTaxonomiesResponse, ListUsersResponse, UpdateResourceBody, UpdateResourceParams, DeleteResourceParams, DeleteResourceResponse,
   RunImpactDiagnosticResponse, RunImpactSyncResponse, UpdateSettingsBody, UpdateSupportRequestBody, UpdateTaxonomyBody,
 } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
@@ -173,6 +173,15 @@ router.get("/admin/resources/:id", async (req, res): Promise<void> => {
 router.put("/admin/resources/:id", sameOrigin, async (req, res): Promise<void> => {
   const parsed = UpdateResourceParams.safeParse(req.params); if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await saveResource(req, res, parsed.data.id);
+});
+router.delete("/admin/resources/:id", sameOrigin, async (req, res): Promise<void> => {
+  const parsed = DeleteResourceParams.safeParse(req.params);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (!req.ecomUser) { res.status(401).json({ error: "Unauthorized" }); return; }
+  const [deleted] = await db.delete(resourcesTable).where(eq(resourcesTable.id, parsed.data.id)).returning({ id: resourcesTable.id });
+  if (!deleted) { res.status(404).json({ error: "Resource not found", code: "RESOURCE_NOT_FOUND" }); return; }
+  await audit(req.ecomUser.clerkId, "resource_deleted", "Administrative content deletion", { resourceId: deleted.id });
+  res.json(DeleteResourceResponse.parse({ message: "Resource deleted" }));
 });
 
 router.get("/admin/users", async (_req, res): Promise<void> => {

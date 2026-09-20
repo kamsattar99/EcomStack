@@ -89,7 +89,7 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
         <FormField control={form.control} name="type" render={({ field }) => (
           <FormItem>
             <FormLabel>Type</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || undefined}>
               <FormControl>
                 <SelectTrigger className="bg-white" data-testid="select-type"><SelectValue placeholder="Select type" /></SelectTrigger>
               </FormControl>
@@ -108,7 +108,7 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
             <FormLabel>Category</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <SelectTrigger className="bg-white" data-testid="select-category"><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectTrigger className="bg-white" data-testid="select-category"><SelectValue placeholder="No category selected" /></SelectTrigger>
               </FormControl>
               <SelectContent>
                 {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
@@ -121,9 +121,9 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
         <FormField control={form.control} name="tool" render={({ field }) => (
           <FormItem>
             <FormLabel>Tool</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || undefined}>
               <FormControl>
-                <SelectTrigger className="bg-white" data-testid="select-tool"><SelectValue placeholder="Select tool" /></SelectTrigger>
+                <SelectTrigger className="bg-white" data-testid="select-tool"><SelectValue placeholder="No tool selected" /></SelectTrigger>
               </FormControl>
               <SelectContent>
                 {tools.map(t => <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>)}

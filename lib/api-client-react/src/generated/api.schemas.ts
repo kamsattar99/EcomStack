@@ -262,6 +262,10 @@ export interface SupportInput {
   message: string;
 }
 
+export interface DeletionResult {
+  message: string;
+}
+
 export interface SupportRequest {
   id: string;
   userId: string;

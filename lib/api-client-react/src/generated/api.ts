@@ -28,6 +28,7 @@ import type {
   BookmarkInput,
   ClaimInput,
   ClaimResult,
+  DeletionResult,
   ErrorResponse,
   GrantInput,
   HealthStatus,
@@ -1687,6 +1688,74 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getUpdateResourceMutationOptions(options));
+    }
+
+export const getDeleteResourceUrl = (id: string,) => {
+
+
+
+
+  return `/api/admin/resources/${id}`
+}
+
+export const deleteResource = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<DeletionResult> => {
+
+  return customFetch<DeletionResult>(getDeleteResourceUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteResourceMutationKey = () => ['deleteResource'] as const;
+
+export const getDeleteResourceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteResource>>, TError,DeleteResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteResource>>, TError,DeleteResourceMutationVariables, TContext> => {
+
+const mutationKey = getDeleteResourceMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteResource>>, DeleteResourceMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteResource(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteResourceMutationResult = NonNullable<Awaited<ReturnType<typeof deleteResource>>>
+
+    export type DeleteResourceMutationError = ErrorType<void>
+    export type DeleteResourceMutationVariables = {id: string}
+
+    export const useDeleteResource = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteResource>>, TError,DeleteResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteResource>>,
+        TError,
+        DeleteResourceMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDeleteResourceMutationOptions(options));
     }
 
 export const getListUsersUrl = () => {

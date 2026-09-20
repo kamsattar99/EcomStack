@@ -538,6 +538,15 @@ export const UpdateResourceResponse = zod.object({
 })
 
 
+export const DeleteResourceParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteResourceResponse = zod.object({
+  "message": zod.string()
+})
+
+
 export const ListUsersResponseItem = zod.object({
   "id": zod.string(),
   "role": zod.string(),

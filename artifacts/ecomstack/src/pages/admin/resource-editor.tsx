@@ -42,7 +42,7 @@ export default function AdminResourceEditorPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: adminResource, isLoading: isLoadingResource } = useGetAdminResource(id || "", {
+  const { data: adminResource, isLoading: isLoadingResource, isError: isResourceError, error: resourceError } = useGetAdminResource(id || "", {
     query: { enabled: !isNew, queryKey: getGetAdminResourceQueryKey(id!) }
   });
   
@@ -74,12 +74,12 @@ export default function AdminResourceEditorPage() {
   const autoSaveInFlight = useRef(false);
 
   useEffect(() => {
-    if (!isNew && adminResource && initializedForId.current !== id) {
+    if (!isNew && adminResource && taxonomies && initializedForId.current !== id) {
       initializedForId.current = id;
       const r = adminResource.resource;
       const values = {
         slug: r.slug, title: r.title, description: r.description,
-        type: r.type, category: r.category, tool: r.tool,
+        type: r.type, category: r.category || categories[0]?.name || "", tool: r.tool || tools[0]?.name || "",
         tags: r.tags || [], preview: r.preview, useCase: r.useCase || "",
         instructions: r.instructions || "", tutorialUrl: r.tutorialUrl || "",
         sourceUrl: r.sourceUrl || "", sourceNotes: r.sourceNotes || "",
@@ -90,7 +90,7 @@ export default function AdminResourceEditorPage() {
       form.reset(values);
       lastSaved.current = JSON.stringify(values);
     }
-  }, [adminResource, id, isNew, form]);
+  }, [adminResource, id, isNew, form, taxonomies, categories, tools]);
 
   const formValues = useWatch({ control: form.control }) as ResourceFormValues;
 
@@ -247,6 +247,13 @@ export default function AdminResourceEditorPage() {
   if (!isNew && isLoadingResource) return (
     <div className="p-8 flex items-center justify-center min-h-[50vh]">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+  if (!isNew && isResourceError) return (
+    <div className="mx-auto max-w-xl p-8 text-center">
+      <h1 className="font-serif text-2xl text-[#193C36]">Couldn’t open this resource</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{resourceError instanceof Error ? resourceError.message : "Please return to the resource list and try again."}</p>
+      <Button className="mt-6" type="button" onClick={() => setLocation("/admin/resources")}>Back to resources</Button>
     </div>
   );
 

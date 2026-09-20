@@ -809,6 +809,43 @@
             "description": "Access denied"
           }
         }
+      },
+      "delete": {
+        "operationId": "deleteResource",
+        "tags": [
+          "ecomstack"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resource deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
       }
     },
     "/admin/users": {
@@ -2119,6 +2156,17 @@
         },
         "required": [
           "subject",
+          "message"
+        ]
+      },
+      "DeletionResult": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
           "message"
         ]
       },

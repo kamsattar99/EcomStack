@@ -1,12 +1,30 @@
 import { Link } from "wouter";
-import { useListAdminResources } from "@workspace/api-client-react";
+import { useListAdminResources, useDeleteResource, getListAdminResourcesQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, FileText } from "lucide-react";
+import { Plus, Edit, FileText, Loader2, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function AdminResourcesPage() {
   const { data: resources, isLoading } = useListAdminResources();
+  const deleteResource = useDeleteResource();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleDelete = (id: string, title: string) => {
+    if (!window.confirm(`Delete “${title}”? This permanently removes the resource and its uploaded files.`)) return;
+    deleteResource.mutate({ id }, {
+      onSuccess: () => {
+        toast({ title: "Resource deleted" });
+        queryClient.invalidateQueries({ queryKey: getListAdminResourcesQueryKey() });
+      },
+      onError: (error) => {
+        toast({ variant: "destructive", title: "Couldn’t delete resource", description: error instanceof Error ? error.message : "Please try again." });
+      },
+    });
+  };
 
   if (isLoading) {
     return <div className="p-8">Loading resources...</div>;
@@ -76,6 +94,10 @@ export default function AdminResourcesPage() {
                       <Link href={`/admin/resources/${r.id}`}>
                         <Edit className="h-4 w-4 mr-2" /> Edit
                       </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete(r.id, r.title)} disabled={deleteResource.isPending}>
+                      {deleteResource.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                      Delete
                     </Button>
                   </TableCell>
                 </TableRow>

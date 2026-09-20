@@ -162,7 +162,7 @@ export const RecordResourceActivityParams = zod.object({
 })
 
 export const RecordResourceActivityBody = zod.object({
-  "action": zod.enum(['copy'])
+  "action": zod.enum(['copy', 'view'])
 })
 
 export const RecordResourceActivityResponse = zod.object({

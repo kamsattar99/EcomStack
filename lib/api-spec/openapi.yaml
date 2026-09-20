@@ -2793,7 +2793,8 @@
           "action": {
             "type": "string",
             "enum": [
-              "copy"
+              "copy",
+              "view"
             ]
           }
         },

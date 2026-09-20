@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, FileText, ChevronLeft, Bookmark, Check, Download, Copy, MessageCircle, Blocks, ClipboardCheck, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@clerk/react";
 import { PageMeta } from "@/components/page-meta";
@@ -39,8 +39,15 @@ export default function ResourceDetailPage() {
   const [copyError, setCopyError] = useState(false);
   const setBookmark = useSetBookmark();
   const recordActivity = useRecordResourceActivity();
+  const viewedSlugs = useRef(new Set<string>());
   const savedReturn = new URLSearchParams(window.location.search).get("from");
   const backToVault = savedReturn?.startsWith("/library") ? savedReturn : "/library";
+
+  useEffect(() => {
+    if (!isSignedIn || !content || viewedSlugs.current.has(slug)) return;
+    viewedSlugs.current.add(slug);
+    recordActivity.mutate({ slug, data: { action: "view" } });
+  }, [content, isSignedIn, recordActivity, slug]);
 
   const handleBookmark = () => {
     if (!detail) return;

@@ -24,8 +24,8 @@ import { ResourcePreviewStep } from "@/components/admin/ResourcePreviewStep";
 
 export function getResourceChecklist(values: ResourceFormValues, fileAssetsCount: number, uploadingCount: number) {
   return [
-    { label: "Title is set", pass: !!values.title.trim() },
-    { label: "Slug is valid", pass: !!values.slug.trim() && /^[a-z0-9-]+$/.test(values.slug) },
+    { label: "Title is set", pass: !!values.title?.trim() },
+    { label: "Slug is valid", pass: !!values.slug?.trim() && /^[a-z0-9-]+$/.test(values.slug) },
   ];
 }
 
@@ -242,6 +242,26 @@ export default function AdminResourceEditorPage() {
     });
   };
 
+  const handleArchive = async () => {
+    if (isNew || !id) return;
+
+    const data = form.getValues();
+    setSaveStatus('saving');
+    try {
+      const res = await updateResource.mutateAsync({ id, data: { ...data, status: 'archived' } });
+      form.setValue('status', 'archived');
+      lastSaved.current = JSON.stringify({ ...data, status: 'archived' });
+      setSaveStatus('saved');
+      toast({ title: "Resource archived" });
+      queryClient.setQueryData(getGetAdminResourceQueryKey(id), (old: any) =>
+        old ? { ...old, resource: res, content: data.content } : old
+      );
+    } catch {
+      setSaveStatus('failed');
+      toast({ variant: "destructive", title: "Failed to archive", description: "Your published resource is unchanged. Please try again." });
+    }
+  };
+
   const steps = [
     { num: 1, label: "Details" },
     { num: 2, label: "Content & files" },
@@ -274,6 +294,11 @@ export default function AdminResourceEditorPage() {
         </div>
         
         <div className="flex items-center gap-3">
+          {!isNew && formValues.status === 'published' && (
+            <Button type="button" variant="outline" onClick={handleArchive} disabled={updateResource.isPending} data-testid="button-archive">
+              Archive
+            </Button>
+          )}
           <Button type="button" variant="outline" onClick={() => setLocation("/admin/resources")}>
             Close
           </Button>

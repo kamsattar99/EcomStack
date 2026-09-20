@@ -7,7 +7,7 @@ import {
 } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
 import { clerkClient } from "@clerk/express";
-import { currentUser, requireUser, sameOrigin } from "../lib/auth";
+import { currentUser, hasCompletedOnboarding, requireUser, sameOrigin } from "../lib/auth";
 import { coversFor, defaults, hasAccess, isSaved, resourceAssets, resourceDto } from "../lib/domain";
 import { safeAffiliateUrl } from "../lib/impact";
 import { withRuntimeEnvironment } from "../lib/runtime-site";
@@ -66,6 +66,7 @@ router.get("/resources/:slug/content", async (req, res): Promise<void> => {
   const s = await config();
   if (!r || (!validPublic(r, s.development) && user?.role !== "admin")) { res.status(404).json({ error: "Resource not found" }); return; }
   if (!r.isFree && !user) { res.status(401).json({ error: "Unauthorized" }); return; }
+  if (!r.isFree && user!.role !== "admin" && !await hasCompletedOnboarding(user!.id)) { res.status(403).json({ error: "Complete Shopify onboarding to access the Vault." }); return; }
   if (!r.isFree && user!.role !== "admin" && !await hasAccess(user!.id, r)) { res.status(403).json({ error: "Access denied" }); return; }
   res.json(GetResourceContentResponse.parse({ content: r.content, instructions: r.instructions, assets: await resourceAssets(r.id) }));
 });

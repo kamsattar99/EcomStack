@@ -248,8 +248,8 @@ export const StartClaimResponse = zod.object({
 
 
 export const CompleteOnboardingBody = zod.object({
-  "decision": zod.enum(['started', 'deferred']),
-  "shopifySelfReported": zod.boolean().optional(),
+  "decision": zod.enum(['started']),
+  "shopifySelfReported": zod.boolean(),
   "marketingOptIn": zod.boolean().optional()
 })
 

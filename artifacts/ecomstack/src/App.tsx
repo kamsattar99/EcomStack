@@ -126,15 +126,19 @@ function ClerkQueryClientCacheInvalidator() {
 
 function ProtectedRoute({ component: Component, adminOnly = false, ...rest }: any) {
   const { isSignedIn, isLoaded: clerkLoaded } = useUser();
+  const [location] = useLocation();
   const { data: member, isLoading: memberLoading } = useGetMember({
     query: { enabled: !!isSignedIn, queryKey: getGetMemberQueryKey() }
   });
 
   if (!clerkLoaded) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   if (!isSignedIn) return <Redirect to="/sign-in" />;
+  if (memberLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
+  if (member?.role !== "admin" && !member?.onboardingCompleted && location !== "/unlock" && location !== "/support") {
+    return <Redirect to="/unlock" />;
+  }
 
   if (adminOnly) {
-    if (memberLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
     if (member?.role !== 'admin') {
       return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center">
@@ -196,7 +200,7 @@ function AppRoutes() {
 function Router() {
   const [location] = useLocation();
   const routes = <AppRoutes />;
-  return location.startsWith("/sign-in") || location.startsWith("/sign-up")
+  return location.startsWith("/sign-in") || location.startsWith("/sign-up") || location.startsWith("/unlock")
     ? routes
     : <Layout>{routes}</Layout>;
 }

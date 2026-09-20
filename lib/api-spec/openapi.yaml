@@ -1820,8 +1820,7 @@
           "decision": {
             "type": "string",
             "enum": [
-              "started",
-              "deferred"
+              "started"
             ]
           },
           "shopifySelfReported": {
@@ -1832,7 +1831,8 @@
           }
         },
         "required": [
-          "decision"
+          "decision",
+          "shopifySelfReported"
         ],
         "additionalProperties": false
       },

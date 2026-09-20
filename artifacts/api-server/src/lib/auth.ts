@@ -1,5 +1,5 @@
 import { getAuth } from "@clerk/express";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { activityTable, db, usersTable } from "@workspace/db";
 import type { NextFunction, Request, Response } from "express";
 
@@ -39,6 +39,13 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
   if (!user) { res.status(401).json({ error: "Unauthorized" }); return; }
   if (user.role !== "admin") { res.status(403).json({ error: "Access denied" }); return; }
   next();
+}
+
+/** Completion is an explicit member action, distinct from click tracking or affiliate verification. */
+export async function hasCompletedOnboarding(userId: string): Promise<boolean> {
+  const [completion] = await db.select({ id: activityTable.id }).from(activityTable)
+    .where(and(eq(activityTable.userId, userId), eq(activityTable.action, "onboarding_completed"))).limit(1);
+  return Boolean(completion);
 }
 
 /** Browser mutations are accepted only from this site's origin (or same-origin without Origin). */

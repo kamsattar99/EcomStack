@@ -194,12 +194,11 @@ export type OnboardingDecisionInputDecision = typeof OnboardingDecisionInputDeci
 
 export const OnboardingDecisionInputDecision = {
   started: 'started',
-  deferred: 'deferred',
 } as const;
 
 export interface OnboardingDecisionInput {
   decision: OnboardingDecisionInputDecision;
-  shopifySelfReported?: boolean;
+  shopifySelfReported: boolean;
   marketingOptIn?: boolean;
 }
 

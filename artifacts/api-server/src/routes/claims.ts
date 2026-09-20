@@ -66,10 +66,11 @@ router.post("/claims/check", requireUser, sameOrigin, async (req, res): Promise<
   }
 });
 
-/** Records an optional product-onboarding choice; it never confers a referral or entitlement. */
+/** Records a member's required self-report; it never verifies attribution or grants entitlement. */
 router.post("/onboarding/complete", requireUser, sameOrigin, async (req, res): Promise<void> => {
   const body = CompleteOnboardingBody.strict().safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: "Invalid onboarding choice" }); return; }
+  if (!body.data.shopifySelfReported) { res.status(400).json({ error: "Confirm your Shopify signup through Kamil’s link to continue." }); return; }
   const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
     .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
   const [member] = await db.select({

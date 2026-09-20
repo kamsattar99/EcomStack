@@ -27,7 +27,6 @@ export default function UnlockPage() {
   const queryClient = useQueryClient();
   const [signupError, setSignupError] = useState("");
   const [signupUrl, setSignupUrl] = useState("");
-  const [shopifyOpened, setShopifyOpened] = useState(false);
   const [shopifySelfReported, setShopifySelfReported] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const pendingProfile = useRef<PendingProfile | null>(null);
@@ -111,7 +110,6 @@ export default function UnlockPage() {
   const handleStart = () => {
     setSignupError("");
     setSignupUrl("");
-    setShopifyOpened(false);
     const partnerTab = window.open("about:blank", "_blank");
     if (partnerTab) partnerTab.opener = null;
     let resourceSlug: string | undefined;
@@ -123,7 +121,6 @@ export default function UnlockPage() {
         if (partnerTab && !partnerTab.closed) {
           try {
             partnerTab.location.replace(result.redirectUrl);
-            setShopifyOpened(true);
           }
           catch {
             partnerTab.close();
@@ -143,8 +140,9 @@ export default function UnlockPage() {
     });
   };
 
-  const handleContinue = (decision: "started" | "deferred") => {
-    completeOnboarding.mutate({ data: { decision, shopifySelfReported, marketingOptIn } }, {
+  const handleContinue = () => {
+    if (!shopifySelfReported || completeOnboarding.isPending) return;
+    completeOnboarding.mutate({ data: { decision: "started", shopifySelfReported, marketingOptIn } }, {
       onSuccess: () => {
         let resourceSlug: string | null = null;
         try { resourceSlug = sessionStorage.getItem('pendingResourceSlug'); }
@@ -174,53 +172,47 @@ export default function UnlockPage() {
           <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]"><AppLogo className="h-7 w-7 shrink-0 rounded-lg" />EcomStack</Link>
           <span className="text-sm font-semibold text-[#52645d]">Account setup</span>
         </header>
-        <main className="relative mx-auto flex max-w-[800px] flex-col items-center pb-8 pt-9 sm:pt-12">
+        <main className="relative mx-auto flex max-w-[680px] flex-col items-center pb-8 pt-7 sm:pt-9">
           <div aria-hidden="true" className="absolute -top-8 -z-10 h-64 w-64 rounded-full bg-[#E8F1E6] blur-3xl" />
           <div className="mb-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#74857c] sm:text-[11px]">
             <span className="inline-flex items-center gap-1 text-[#2F765F]"><Check className="h-3.5 w-3.5" /> Account</span><span aria-hidden="true">→</span><span className="text-[#193C36]">Shopify</span><span aria-hidden="true">→</span><span>Vault</span>
           </div>
           <Card className="shopify-card w-full overflow-hidden rounded-3xl border-[#dce7dd] bg-white shadow-[0_18px_50px_rgba(25,60,54,0.10)]">
-            <CardContent className="p-6 sm:p-10 md:p-12">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                <div className="max-w-[500px]">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2F765F]">Get your store ready</p>
-                  <h1 className="mt-4 font-serif text-4xl leading-[.98] tracking-[-0.05em] text-[#193C36] sm:text-5xl">An active Shopify store.<br />Your next step.</h1>
+            <CardContent className="p-5 sm:p-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="max-w-[470px]">
+                  <h1 className="font-serif text-[2.25rem] leading-[.98] tracking-[-0.05em] text-[#193C36] sm:text-[2.625rem]">Start Shopify.<br />Continue to your Vault.</h1>
                 </div>
-                <ShopifyTile className="shopify-float mx-auto h-24 w-24 shrink-0 sm:mx-0 sm:h-36 sm:w-36" />
+                <ShopifyTile className="shopify-float mx-auto h-24 w-24 shrink-0 sm:mx-0 sm:h-28 sm:w-28" />
               </div>
-              <p className="mt-6 max-w-[610px] text-base leading-7 text-[#607069]">You’ll need an active Shopify store to follow our Shopify-specific guides on your own store. If you’re starting a new store, use my link below, then return to put your prompts, skills and cheat sheets into action.</p>
-              <p className="mt-4 text-sm font-medium text-[#52645d]">Starting through my link supports EcomStack.</p>
+              <p className="mt-5 max-w-[560px] text-base leading-7 text-[#607069]">Create your Shopify store using Kamil’s link. Once you’ve signed up, return here and confirm below to continue to the Vault.</p>
 
-            {shopifyOpened ? (
-              <div className="mt-8 rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5">
-                <p className="font-semibold text-[#193c36]">Shopify opened in a new tab.</p>
-                <p className="mt-1 text-sm leading-6 text-[#53645d]">When you’re ready, return here to start using the Vault.</p>
-                <Button variant="outline" onClick={handleStart} disabled={startClaim.isPending} className="mt-5 border-[#b9cfbd] bg-white text-[#193C36] hover:bg-white">Reopen Shopify</Button>
-              </div>
-            ) : (
-              <div className="mt-8">
-                <Button size="lg" className="h-14 w-full bg-[#193c36] text-base text-white shadow-[0_10px_18px_rgba(25,60,54,.16)] transition hover:-translate-y-0.5 hover:bg-[#24584e]" onClick={handleStart} disabled={startClaim.isPending}>
-                  {startClaim.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ExternalLink className="mr-2 h-5 w-5" />}
-                  Start Shopify through my link ↗
+              <div className="mt-7">
+                <Button size="lg" variant={shopifySelfReported ? "outline" : "default"} className={`h-[54px] w-full rounded-xl px-5 text-base transition ${shopifySelfReported ? "border-[#b9cfbd] bg-white text-[#193C36] shadow-none hover:bg-[#f4f8f4]" : "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]"}`} onClick={handleStart} disabled={startClaim.isPending}>
+                  <span>{startClaim.isPending ? "Opening Shopify…" : "Start Shopify with Kamil’s link"}</span>
+                  {startClaim.isPending ? <Loader2 className="ml-auto h-5 w-5 animate-spin" /> : <ExternalLink className="ml-auto h-5 w-5" />}
                 </Button>
-                <p className="mt-4 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
+                <p className="mt-3 text-center text-sm text-[#607069]">Opens in a new tab. Return here after signing up.</p>
+                <p className="mt-2 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
               </div>
-            )}
-            <fieldset className="mt-6 space-y-3 rounded-2xl border border-[#dce7dd] bg-[#FBFCFA] p-4" disabled={memberLoading || completeOnboarding.isPending}>
-              <legend className="sr-only">Optional preferences</legend>
-              <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[#42574b]">
-                <input type="checkbox" checked={shopifySelfReported} onChange={(event) => setShopifySelfReported(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-[#2F765F]" />
-                <span>I’ve signed up to Shopify using Kamil’s link.</span>
+
+            <fieldset className="mt-6 space-y-4 border-t border-[#dce7dd] pt-5" disabled={memberLoading || completeOnboarding.isPending}>
+              <legend className="sr-only">Shopify confirmation and email preferences</legend>
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg py-1 text-sm leading-6 text-[#42574b]">
+                <input type="checkbox" checked={shopifySelfReported} onChange={(event) => setShopifySelfReported(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-2 focus:ring-[#2F765F] focus:ring-offset-2" />
+                <span className="min-w-0"><span className="font-medium text-[#193C36]">I’ve signed up to Shopify using Kamil’s link.</span> <span className="ml-1 rounded-full bg-[#e8f1e6] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#2f765f]">Required</span></span>
               </label>
-              <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[#42574b]">
-                <input type="checkbox" checked={marketingOptIn} onChange={(event) => setMarketingOptIn(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-[#2F765F]" />
-                <span>Email me EcomStack tips, new resources and offers. I can unsubscribe at any time.</span>
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg py-1 text-sm leading-6 text-[#42574b]">
+                <input type="checkbox" checked={marketingOptIn} onChange={(event) => setMarketingOptIn(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-2 focus:ring-[#2F765F] focus:ring-offset-2" />
+                <span className="min-w-0"><span className="font-medium text-[#193C36]">Email me EcomStack tips, new resources and offers.</span> <span className="ml-1 rounded-full bg-[#f0f3f0] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#66766d]">Optional</span><span className="block text-[#66766d]">Unsubscribe at any time.</span></span>
               </label>
             </fieldset>
-            <Button variant="ghost" className="mt-4 w-full text-[#53645d] hover:bg-[#E8F1E6] hover:text-[#193c36]" onClick={() => handleContinue(shopifyOpened ? "started" : "deferred")} disabled={completeOnboarding.isPending || memberLoading}>
-              {completeOnboarding.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {shopifyOpened ? "Open my Vault" : "Continue to the Vault"}
+
+            <Button className={`mt-5 h-[54px] w-full rounded-xl text-base transition ${shopifySelfReported ? "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]" : "bg-[#e6ece7] text-[#75827a] hover:bg-[#e6ece7]"}`} onClick={handleContinue} disabled={!shopifySelfReported || completeOnboarding.isPending || memberLoading}>
+              {completeOnboarding.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {completeOnboarding.isPending ? "Saving…" : "Continue to the Vault →"}
             </Button>
+            <p className="mt-2 min-h-5 text-center text-sm text-[#65756d]">{shopifySelfReported ? "\u00a0" : "Confirm you signed up through Kamil’s link to continue."}</p>
 
             {signupError && <Alert variant="destructive" className="mt-6"><AlertTitle>Couldn't open Shopify</AlertTitle><AlertDescription>{signupError}</AlertDescription></Alert>}
             {signupUrl && <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-sm font-semibold text-[#193c36] underline underline-offset-4">Open the Shopify backup link</a>}

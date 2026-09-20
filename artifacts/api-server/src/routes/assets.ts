@@ -3,7 +3,7 @@ import { assetsTable, db, resourcesTable } from "@workspace/db";
 import { ConfirmAssetBody, ConfirmAssetResponse, RequestAssetUploadBody, RequestAssetUploadResponse } from "@workspace/api-zod";
 import { randomUUID } from "node:crypto";
 import { Router, type IRouter } from "express";
-import { currentUser, requireAdmin, sameOrigin } from "../lib/auth";
+import { currentUser, hasCompletedOnboarding, requireAdmin, sameOrigin } from "../lib/auth";
 import { objectStorageClient } from "../lib/objectStorage";
 
 const router: IRouter = Router();
@@ -97,6 +97,7 @@ async function serve(assetId: string, req: Parameters<typeof router.get>[1] exte
   if (!resource || (cover ? !(resource.status === "published" || developmentDemo) : !(resource.status === "published" || developmentDemo || user?.role === "admin"))) { res.status(404).json({ error: "Asset not found" }); return; }
   if (!cover) {
     if (!resource.isFree && !user) { res.status(401).json({ error: "Unauthorized" }); return; }
+    if (!resource.isFree && user!.role !== "admin" && !await hasCompletedOnboarding(user!.id)) { res.status(403).json({ error: "Complete Shopify onboarding to access the Vault." }); return; }
     if (req.query.inline === "1" && (asset.contentType !== "application/pdf" || (!resource.isFree && !user))) { res.status(403).json({ error: "Inline preview is not available" }); return; }
     if (user) await db.insert((await import("@workspace/db")).activityTable).values({ userId: user.id, resourceId: resource.id, action: "download" });
   }

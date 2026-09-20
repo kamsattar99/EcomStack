@@ -135,7 +135,7 @@ function ProtectedRoute({ component: Component, adminOnly = false, ...rest }: an
   if (!clerkLoaded) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   if (!isSignedIn) return <Redirect to="/sign-in" />;
   if (memberLoading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
-  if (member?.role !== "admin" && !member?.onboardingCompleted && location !== "/unlock" && location !== "/support") {
+  if (member?.role !== "admin" && !member?.onboardingCompleted && !location.startsWith("/unlock") && location !== "/support") {
     return <Redirect to="/unlock" />;
   }
 

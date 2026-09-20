@@ -1754,6 +1754,12 @@
               "null"
             ]
           },
+          "shopifySelfReported": {
+            "type": "boolean"
+          },
+          "marketingOptIn": {
+            "type": "boolean"
+          },
           "savedResources": {
             "type": "array",
             "items": {
@@ -1776,6 +1782,8 @@
           "claimStatus",
           "lastCheckedAt",
           "resumeSlug",
+          "shopifySelfReported",
+          "marketingOptIn",
           "savedResources",
           "recentResources"
         ]
@@ -1815,6 +1823,12 @@
               "started",
               "deferred"
             ]
+          },
+          "shopifySelfReported": {
+            "type": "boolean"
+          },
+          "marketingOptIn": {
+            "type": "boolean"
           }
         },
         "required": [

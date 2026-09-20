@@ -8,4 +8,6 @@ import type { OnboardingDecisionInputDecision } from './onboardingDecisionInputD
 
 export interface OnboardingDecisionInput {
   decision: OnboardingDecisionInputDecision;
+  shopifySelfReported?: boolean;
+  marketingOptIn?: boolean;
 }

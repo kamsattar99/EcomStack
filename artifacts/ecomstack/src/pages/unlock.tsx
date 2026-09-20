@@ -27,6 +27,8 @@ export default function UnlockPage() {
   const [signupError, setSignupError] = useState("");
   const [signupUrl, setSignupUrl] = useState("");
   const [shopifyOpened, setShopifyOpened] = useState(false);
+  const [shopifySelfReported, setShopifySelfReported] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const pendingProfile = useRef<PendingProfile | null>(null);
   const profileSyncStarted = useRef(false);
   const [profileStatus, setProfileStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -71,6 +73,12 @@ export default function UnlockPage() {
   useEffect(() => {
     if (!memberLoading && member?.onboardingCompleted) setLocation("/dashboard");
   }, [member?.onboardingCompleted, memberLoading, setLocation]);
+
+  useEffect(() => {
+    if (!member) return;
+    setShopifySelfReported(member.shopifySelfReported);
+    setMarketingOptIn(member.marketingOptIn);
+  }, [member?.shopifySelfReported, member?.marketingOptIn]);
 
   if (profileStatus !== "ready") {
     return (
@@ -135,7 +143,7 @@ export default function UnlockPage() {
   };
 
   const handleContinue = (decision: "started" | "deferred") => {
-    completeOnboarding.mutate({ data: { decision } }, {
+    completeOnboarding.mutate({ data: { decision, shopifySelfReported, marketingOptIn } }, {
       onSuccess: () => {
         let resourceSlug: string | null = null;
         try { resourceSlug = sessionStorage.getItem('pendingResourceSlug'); }
@@ -174,25 +182,20 @@ export default function UnlockPage() {
             <CardContent className="p-6 sm:p-10 md:p-12">
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-[500px]">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2F765F]">Your next step</p>
-                  <h1 className="mt-4 font-serif text-4xl leading-[.98] tracking-[-0.05em] text-[#193C36] sm:text-5xl">Start your store.<br />Put the Vault to work.</h1>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#2F765F]">Get your store ready</p>
+                  <h1 className="mt-4 font-serif text-4xl leading-[.98] tracking-[-0.05em] text-[#193C36] sm:text-5xl">An active Shopify store.<br />Your next step.</h1>
                 </div>
                 <ShopifyTile className="shopify-float mx-auto h-24 w-24 shrink-0 sm:mx-0 sm:h-36 sm:w-36" />
               </div>
-              <p className="mt-6 max-w-[610px] text-base leading-7 text-[#607069]">If you’re opening a new Shopify store, please start through my link. It supports EcomStack and gives you a place to put your prompts, skills and cheat sheets into practice.</p>
+              <p className="mt-6 max-w-[610px] text-base leading-7 text-[#607069]">You’ll need an active Shopify store to follow our Shopify-specific guides on your own store. If you’re starting a new store, use my link below, then return to put your prompts, skills and cheat sheets into action.</p>
+              <p className="mt-4 text-sm font-medium text-[#52645d]">Starting through my link supports EcomStack.</p>
               <p className="mt-4 text-sm font-semibold text-[#193c36]">Kamil · EcomStack</p>
 
             {shopifyOpened ? (
               <div className="mt-8 rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5">
                 <p className="font-semibold text-[#193c36]">Shopify opened in a new tab.</p>
                 <p className="mt-1 text-sm leading-6 text-[#53645d]">When you’re ready, return here to start using the Vault.</p>
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <Button onClick={() => handleContinue("started")} disabled={completeOnboarding.isPending} className="bg-[#193c36] text-white hover:bg-[#24584e]">
-                    {completeOnboarding.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Open my Vault
-                  </Button>
-                  <Button variant="outline" onClick={handleStart} disabled={startClaim.isPending} className="border-[#b9cfbd] bg-white text-[#193C36] hover:bg-white">Reopen Shopify</Button>
-                </div>
+                <Button variant="outline" onClick={handleStart} disabled={startClaim.isPending} className="mt-5 border-[#b9cfbd] bg-white text-[#193C36] hover:bg-white">Reopen Shopify</Button>
               </div>
             ) : (
               <div className="mt-8">
@@ -202,11 +205,23 @@ export default function UnlockPage() {
                 </Button>
                 <p className="mt-3 text-center text-sm text-[#607069]">Opens in a new tab. Return here when you’re ready to explore the Vault.</p>
                 <p className="mt-4 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
-                <Button variant="ghost" className="mt-4 w-full text-[#53645d] hover:bg-[#E8F1E6] hover:text-[#193c36]" onClick={() => handleContinue("deferred")} disabled={completeOnboarding.isPending}>
-                  I’ll do this later — open the Vault
-                </Button>
               </div>
             )}
+            <fieldset className="mt-6 space-y-3 rounded-2xl border border-[#dce7dd] bg-[#FBFCFA] p-4" disabled={memberLoading || completeOnboarding.isPending}>
+              <legend className="sr-only">Optional preferences</legend>
+              <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[#42574b]">
+                <input type="checkbox" checked={shopifySelfReported} onChange={(event) => setShopifySelfReported(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-[#2F765F]" />
+                <span>I’ve signed up to Shopify using Kamil’s link.</span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[#42574b]">
+                <input type="checkbox" checked={marketingOptIn} onChange={(event) => setMarketingOptIn(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-[#2F765F]" />
+                <span>Email me EcomStack tips, new resources and offers. I can unsubscribe at any time.</span>
+              </label>
+            </fieldset>
+            <Button variant="ghost" className="mt-4 w-full text-[#53645d] hover:bg-[#E8F1E6] hover:text-[#193c36]" onClick={() => handleContinue(shopifyOpened ? "started" : "deferred")} disabled={completeOnboarding.isPending || memberLoading}>
+              {completeOnboarding.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {shopifyOpened ? "Open my Vault" : "Continue to the Vault"}
+            </Button>
 
             {signupError && <Alert variant="destructive" className="mt-6"><AlertTitle>Couldn't open Shopify</AlertTitle><AlertDescription>{signupError}</AlertDescription></Alert>}
             {signupUrl && <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-sm font-semibold text-[#193c36] underline underline-offset-4">Open the Shopify backup link</a>}

@@ -171,6 +171,8 @@ export const GetMemberResponse = zod.object({
   "claimStatus": zod.string(),
   "lastCheckedAt": zod.string().nullable(),
   "resumeSlug": zod.string().nullable(),
+  "shopifySelfReported": zod.boolean(),
+  "marketingOptIn": zod.boolean(),
   "savedResources": zod.array(zod.object({
   "id": zod.string(),
   "slug": zod.string(),
@@ -246,7 +248,9 @@ export const StartClaimResponse = zod.object({
 
 
 export const CompleteOnboardingBody = zod.object({
-  "decision": zod.enum(['started', 'deferred'])
+  "decision": zod.enum(['started', 'deferred']),
+  "shopifySelfReported": zod.boolean().optional(),
+  "marketingOptIn": zod.boolean().optional()
 })
 
 export const CompleteOnboardingResponse = zod.object({

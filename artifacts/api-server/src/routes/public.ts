@@ -95,6 +95,10 @@ router.get("/me", requireUser, async (req, res): Promise<void> => {
   const saved = savedRows.filter(({ resource }) => validPublic(resource, s.development) || user.role === "admin");
   const [onboarding] = await db.select({ id: activityTable.id }).from(activityTable)
     .where(and(eq(activityTable.userId, user.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
+  const [preferences] = await db.select({
+    shopifySelfReportedAt: usersTable.shopifySelfReportedAt,
+    marketingOptIn: usersTable.marketingOptIn,
+  }).from(usersTable).where(eq(usersTable.id, user.id)).limit(1);
   const covers = await coversFor(saved.map((x) => x.resource));
   const activity = await db.select().from(activityTable).where(eq(activityTable.userId, user.id)).orderBy(desc(activityTable.createdAt)).limit(30);
   const ids = [...new Set(activity.map((item) => item.resourceId).filter((id): id is string => Boolean(id)))];
@@ -102,7 +106,7 @@ router.get("/me", requireUser, async (req, res): Promise<void> => {
   const recentById = new Map(recentRows.map((resource) => [resource.id, resource]));
   const recent = ids.map((id) => recentById.get(id)).filter((resource): resource is typeof resourcesTable.$inferSelect => Boolean(resource));
   const recentCovers = await coversFor(recent);
-  res.json(GetMemberResponse.parse({ id: user.clerkId, role: user.role, hasAccess: true, accessSource: "account", onboardingCompleted: Boolean(onboarding), claimStatus: claim?.status ?? "none", lastCheckedAt: claim?.lastCheckedAt?.toISOString() ?? null, resumeSlug: claim?.resumeSlug ?? saved[0]?.bookmark.resumeSlug ?? null, savedResources: saved.map((x) => resourceDto(x.resource, x.resource.coverAssetId ? covers.get(x.resource.coverAssetId) ?? "" : "")), recentResources: recent.map((resource) => resourceDto(resource, resource.coverAssetId ? recentCovers.get(resource.coverAssetId) ?? "" : "")) }));
+  res.json(GetMemberResponse.parse({ id: user.clerkId, role: user.role, hasAccess: true, accessSource: "account", onboardingCompleted: Boolean(onboarding), claimStatus: claim?.status ?? "none", lastCheckedAt: claim?.lastCheckedAt?.toISOString() ?? null, resumeSlug: claim?.resumeSlug ?? saved[0]?.bookmark.resumeSlug ?? null, shopifySelfReported: Boolean(preferences?.shopifySelfReportedAt), marketingOptIn: preferences?.marketingOptIn ?? false, savedResources: saved.map((x) => resourceDto(x.resource, x.resource.coverAssetId ? covers.get(x.resource.coverAssetId) ?? "" : "")), recentResources: recent.map((resource) => resourceDto(resource, resource.coverAssetId ? recentCovers.get(resource.coverAssetId) ?? "" : "")) }));
 });
 
 router.put("/me/profile", requireUser, sameOrigin, async (req, res): Promise<void> => {

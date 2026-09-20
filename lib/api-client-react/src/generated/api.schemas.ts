@@ -168,6 +168,8 @@ export interface Member {
   lastCheckedAt: string | null;
   /** @nullable */
   resumeSlug: string | null;
+  shopifySelfReported: boolean;
+  marketingOptIn: boolean;
   savedResources: Resource[];
   recentResources: Resource[];
 }
@@ -197,6 +199,8 @@ export const OnboardingDecisionInputDecision = {
 
 export interface OnboardingDecisionInput {
   decision: OnboardingDecisionInputDecision;
+  shopifySelfReported?: boolean;
+  marketingOptIn?: boolean;
 }
 
 export interface BookmarkInput {

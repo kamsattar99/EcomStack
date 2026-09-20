@@ -19,6 +19,8 @@ export interface Member {
   lastCheckedAt: string | null;
   /** @nullable */
   resumeSlug: string | null;
+  shopifySelfReported: boolean;
+  marketingOptIn: boolean;
   savedResources: Resource[];
   recentResources: Resource[];
 }

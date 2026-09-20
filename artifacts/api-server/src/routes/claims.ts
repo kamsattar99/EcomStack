@@ -1,5 +1,5 @@
 import { and, eq, gt, lt, or, isNull } from "drizzle-orm";
-import { activityTable, claimsTable, db, resourcesTable } from "@workspace/db";
+import { activityTable, claimsTable, db, resourcesTable, usersTable } from "@workspace/db";
 import { CheckClaimResponse, CompleteOnboardingBody, StartClaimBody, StartClaimResponse } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
 import { requireUser, sameOrigin } from "../lib/auth";
@@ -12,6 +12,7 @@ import { ImpactError } from "../lib/impact";
 import { runImpactSync } from "../lib/sync";
 
 const router: IRouter = Router();
+const MARKETING_CONSENT_VERSION = "shopify-onboarding-v1";
 async function settings() {
   const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, "site"));
   return { ...defaults, ...(row?.value as Record<string, unknown> ?? {}) } as typeof defaults;
@@ -71,6 +72,18 @@ router.post("/onboarding/complete", requireUser, sameOrigin, async (req, res): P
   if (!body.success) { res.status(400).json({ error: "Invalid onboarding choice" }); return; }
   const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
     .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
+  const [member] = await db.select({
+    shopifySelfReportedAt: usersTable.shopifySelfReportedAt,
+    marketingOptIn: usersTable.marketingOptIn,
+  }).from(usersTable).where(eq(usersTable.id, req.ecomUser!.id)).limit(1);
+  const now = new Date();
+  const preferenceUpdate = {
+    shopifySelfReportedAt: body.data.shopifySelfReported && !member?.shopifySelfReportedAt ? now : undefined,
+    marketingOptIn: body.data.marketingOptIn ?? member?.marketingOptIn ?? false,
+    marketingOptInAt: body.data.marketingOptIn === true ? now : body.data.marketingOptIn === false ? null : undefined,
+    marketingConsentVersion: body.data.marketingOptIn === true ? MARKETING_CONSENT_VERSION : body.data.marketingOptIn === false ? null : undefined,
+  };
+  await db.update(usersTable).set(preferenceUpdate).where(eq(usersTable.id, req.ecomUser!.id));
   if (!existing) await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: "onboarding_completed" });
   await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: body.data.decision === "started" ? "onboarding_started" : "onboarding_deferred" });
   res.json(CheckClaimResponse.parse({ message: "Onboarding complete" }));

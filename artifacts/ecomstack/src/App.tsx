@@ -235,8 +235,8 @@ function ClerkProviderWithRoutes() {
         },
         signUp: {
           start: {
-            title: "Create your account",
-            subtitle: "Get started today",
+            title: "Create your EcomStack account.",
+            subtitle: "Access prompts, skills and cheat sheets for ecommerce and digital products.",
           },
         },
       }}

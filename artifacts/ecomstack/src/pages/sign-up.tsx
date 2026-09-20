@@ -1,4 +1,4 @@
-import { ArrowRight, Check, LockKeyhole, UserRound } from "lucide-react";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageMeta } from "@/components/page-meta";
+import { SignupResourceIllustration } from "@/components/signup-resource-illustration";
 
 type RegistrationDetails = {
   firstName: string;
@@ -40,6 +41,7 @@ export default function SignUpPage() {
   const [touched, setTouched] = useState<Partial<Record<keyof RegistrationDetails, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
   const errors = useMemo(() => validate(details), [details]);
+  const isProfileCompletion = isSignedIn;
 
   const update = (field: keyof RegistrationDetails, value: string) => {
     setDetails((current) => ({ ...current, [field]: value }));
@@ -73,103 +75,53 @@ export default function SignUpPage() {
     (touched[field] || submitted) ? errors[field] : undefined;
 
   return (
-    <div className="min-h-[100dvh] bg-[#f4f6f1] text-[#17231f]">
+    <div className="signup-page min-h-[100dvh] overflow-hidden bg-[#FBFCFA] px-4 py-4 text-[#14251F] sm:px-6 sm:py-6">
       <PageMeta
         title="Create your EcomStack account"
         description="Create your EcomStack account and explore prompts, skills and cheat sheets for ecommerce operators."
       />
-      <div className="mx-auto grid min-h-[100dvh] max-w-[1440px] lg:grid-cols-[minmax(360px,0.82fr)_minmax(520px,1.18fr)]">
-        <aside className="relative hidden overflow-hidden bg-[#193c36] px-12 py-12 text-[#f3f1e7] lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute -right-28 top-24 h-72 w-72 rounded-full border border-[#d7ef9b]/20" />
-          <div className="absolute -bottom-36 -left-24 h-96 w-96 rounded-full border border-[#d7ef9b]/15" />
-          <div className="relative">
-            <Link href="/" className="inline-flex items-center gap-3 text-sm font-semibold tracking-[0.16em]">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#d7ef9b] text-[#193c36]">E</span>
-              ECOMSTACK
-            </Link>
-            <div className="mt-28 max-w-sm">
-              <p className="mb-5 text-xs font-semibold uppercase tracking-[0.22em] text-[#d7ef9b]">The operator's vault</p>
-              <h1 className="font-serif text-5xl leading-[0.98] tracking-[-0.04em]">
-                Less searching. More shipping.
-              </h1>
-              <p className="mt-7 max-w-xs text-base leading-7 text-[#dce7dd]/75">
-                Practical resources for the moments your store needs a next move, not another opinion.
-              </p>
-            </div>
-          </div>
-          <div className="relative space-y-4 text-sm text-[#dce7dd]/80">
-            {["Prompts for repeatable work", "Skills for the messy middle", "Cheat sheets you can use today"].map((item) => (
-              <div key={item} className="flex items-center gap-3">
-                <span className="grid h-5 w-5 place-items-center rounded-full border border-[#d7ef9b]/50 text-[#d7ef9b]">
-                  <Check className="h-3 w-3" />
-                </span>
-                {item}
-              </div>
-            ))}
-          </div>
-        </aside>
+      <div className="mx-auto max-w-[1080px]">
+        <header className="flex h-14 items-center justify-between rounded-full border border-[#dfe7df] bg-white/90 px-4 shadow-[0_10px_35px_rgba(20,37,31,0.08)] backdrop-blur-xl sm:px-5">
+          <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]">
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#193C36] text-xs text-[#E8F1E6]">E</span>
+            EcomStack
+          </Link>
+          {!isProfileCompletion && <Link href="/sign-in" className="text-sm font-semibold text-[#52645d] transition-colors hover:text-[#193C36]">Sign in</Link>}
+        </header>
 
-        <main className="flex items-center px-5 py-8 sm:px-10 lg:px-20 lg:py-14">
-          <div className="mx-auto w-full max-w-[590px]">
-            <div className="mb-10 flex items-center justify-between lg:hidden">
-              <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-[0.14em] text-[#193c36]">
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#193c36] text-[#d7ef9b]">E</span>
-                ECOMSTACK
-              </Link>
-              <Link href="/sign-in" className="text-sm font-medium text-[#53645d] hover:text-[#193c36]">
-                Sign in
-              </Link>
-            </div>
+        <main className="grid items-center gap-10 pb-8 pt-11 lg:grid-cols-[1fr_460px] lg:gap-16 lg:pt-16">
+          <section className="signup-enter signup-intro hidden lg:block">
+            <p className="text-xs font-bold tracking-[0.18em] text-[#2F765F]">ECOMSTACK RESOURCE VAULT</p>
+            <h1 className="mt-5 max-w-md font-serif text-5xl leading-[0.98] tracking-[-0.05em] text-[#14251F]">Your next idea starts here.</h1>
+            <p className="mt-6 max-w-sm text-base leading-7 text-[#607069]">Prompts, skills and cheat sheets for building your ecommerce business and digital products.</p>
+            <SignupResourceIllustration className="signup-float mt-7" />
+          </section>
 
-            <div className="mb-10">
-              <div className="mb-6 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6c7b72]">
-                <span className="text-[#193c36]">1. Your details</span>
-                <span aria-hidden="true">→</span>
-                <span>2. Start Shopify</span>
-                <span aria-hidden="true">→</span>
-                <span>3. Open the vault</span>
+          <section className="signup-enter signup-form">
+            <div className="mb-7">
+              <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em] text-[#74857c]">
+                <span className="text-[#193C36]">Account</span><span aria-hidden="true">→</span><span>Shopify</span><span aria-hidden="true">→</span><span>Vault</span>
               </div>
-              <h2 className="font-serif text-4xl leading-[1.06] tracking-[-0.04em] text-[#193c36] sm:text-5xl">
-                Create your EcomStack account.
+              <h2 className="font-serif text-4xl leading-[1.04] tracking-[-0.04em] text-[#14251F] sm:text-[2.7rem]">
+                {isProfileCompletion ? "Finish setting up your account." : "Create your free account."}
               </h2>
-              <p className="mt-5 max-w-xl text-base leading-7 text-[#607069]">
-                Create your EcomStack account, get started with Shopify, and explore your ecommerce prompts, skills and cheat sheets.
+              <p className="mt-4 text-base leading-7 text-[#607069]">
+                {isProfileCompletion ? "Add your details so we can finish setting up your member profile." : "Get your resources in one place."}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
+              <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <Label htmlFor="first-name" className="mb-2 block text-[#31483f]">First name</Label>
-                <div className="relative">
-                  <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#829089]" />
-                  <Input
-                    id="first-name"
-                    autoComplete="given-name"
-                    value={details.firstName}
-                    onChange={(event) => update("firstName", event.target.value)}
-                    onBlur={() => setTouched((current) => ({ ...current, firstName: true }))}
-                    placeholder="First name"
-                    className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("firstName") ? "border-red-400" : ""}`}
-                  />
-                </div>
+                <Input id="first-name" autoComplete="given-name" value={details.firstName} onChange={(event) => update("firstName", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, firstName: true }))} placeholder="First name" className={`h-12 rounded-xl border-[#d3ddd3] bg-white text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-2 focus-visible:ring-[#2F765F] ${fieldError("firstName") ? "border-red-400" : ""}`} />
                 {fieldError("firstName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("firstName")}</p>}
               </div>
-
               <div>
                 <Label htmlFor="last-name" className="mb-2 block text-[#31483f]">Last name</Label>
-                <div className="relative">
-                  <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#829089]" />
-                  <Input
-                    id="last-name"
-                    autoComplete="family-name"
-                    value={details.lastName}
-                    onChange={(event) => update("lastName", event.target.value)}
-                    onBlur={() => setTouched((current) => ({ ...current, lastName: true }))}
-                    placeholder="Last name"
-                    className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("lastName") ? "border-red-400" : ""}`}
-                  />
-                </div>
+                <Input id="last-name" autoComplete="family-name" value={details.lastName} onChange={(event) => update("lastName", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, lastName: true }))} placeholder="Last name" className={`h-12 rounded-xl border-[#d3ddd3] bg-white text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-2 focus-visible:ring-[#2F765F] ${fieldError("lastName") ? "border-red-400" : ""}`} />
                 {fieldError("lastName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("lastName")}</p>}
+              </div>
               </div>
 
               <div className="flex items-start gap-3 border-t border-[#dce4dc] pt-5 text-sm leading-6 text-[#6c7b72]">
@@ -177,21 +129,29 @@ export default function SignUpPage() {
                 <p>Your details stay with EcomStack and are used to set up your member profile.</p>
               </div>
 
-              <Button type="submit" size="lg" className="h-12 w-full justify-between rounded-xl bg-[#193c36] px-5 text-[#f4f6f1] hover:bg-[#24584e]">
-                {isSignedIn ? "Save details" : "Continue to verification"}
-                <ArrowRight className="h-4 w-4" />
+              <Button type="submit" size="lg" className="signup-button h-13 w-full justify-between rounded-xl bg-[#193C36] px-5 text-white shadow-[0_12px_24px_rgba(25,60,54,0.16)] hover:bg-[#2F765F]">
+                {isProfileCompletion ? "Continue to Shopify" : "Continue to verification"}
+                <ArrowRight className="signup-arrow h-4 w-4" />
               </Button>
             </form>
 
-            <p className="mt-7 text-center text-sm text-[#6c7b72]">
+            {!isProfileCompletion && <p className="mt-7 text-center text-sm text-[#6c7b72]">
               Already have an account?{" "}
               <Link href="/sign-in" className="font-semibold text-[#193c36] underline decoration-[#b6cb7e] decoration-2 underline-offset-4 hover:text-[#24584e]">
                 Sign in
               </Link>
-            </p>
-          </div>
+            </p>}
+          </section>
         </main>
       </div>
+      <style>{`
+        .signup-enter { animation: signup-rise .55s cubic-bezier(.22,.8,.26,1) both; } .signup-form { animation-delay: .1s; }
+        .signup-float { animation: signup-float 6.5s ease-in-out infinite; } .signup-button:hover .signup-arrow { transform: translateX(4px); } .signup-arrow { transition: transform .2s ease; }
+        .signup-button:focus-visible { outline: 3px solid #2F765F; outline-offset: 4px; }
+        @keyframes signup-rise { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes signup-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+        @media (prefers-reduced-motion: reduce) { .signup-enter,.signup-float { animation:none !important; } .signup-button,.signup-arrow { transition:none !important; } }
+      `}</style>
     </div>
   );
 }

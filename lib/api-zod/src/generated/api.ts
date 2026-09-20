@@ -216,20 +216,18 @@ export const GetMemberResponse = zod.object({
 })
 
 
-export const updateMemberProfileBodyFullNameMin = 2;
-export const updateMemberProfileBodyFullNameMax = 120;
+export const updateMemberProfileBodyFirstNameMax = 60;
+
+export const updateMemberProfileBodyLastNameMax = 60;
 
 export const updateMemberProfileBodyEmailMax = 320;
 
-export const updateMemberProfileBodyCountryCodeRegExp = new RegExp('^\\+[0-9]{1,4}$');
-export const updateMemberProfileBodyPhoneRegExp = new RegExp('^[0-9]{7,15}$');
 
 
 export const UpdateMemberProfileBody = zod.object({
-  "fullName": zod.string().min(updateMemberProfileBodyFullNameMin).max(updateMemberProfileBodyFullNameMax),
-  "email": zod.string().email().max(updateMemberProfileBodyEmailMax),
-  "countryCode": zod.string().regex(updateMemberProfileBodyCountryCodeRegExp),
-  "phone": zod.string().regex(updateMemberProfileBodyPhoneRegExp)
+  "firstName": zod.string().min(1).max(updateMemberProfileBodyFirstNameMax),
+  "lastName": zod.string().min(1).max(updateMemberProfileBodyLastNameMax),
+  "email": zod.string().email().max(updateMemberProfileBodyEmailMax)
 })
 
 export const UpdateMemberProfileResponse = zod.object({
@@ -247,7 +245,16 @@ export const StartClaimResponse = zod.object({
 })
 
 
+export const CompleteOnboardingBody = zod.object({
+  "decision": zod.enum(['started', 'deferred'])
+})
+
 export const CompleteOnboardingResponse = zod.object({
+  "message": zod.string()
+})
+
+
+export const RecordOnboardingViewResponse = zod.object({
   "message": zod.string()
 })
 

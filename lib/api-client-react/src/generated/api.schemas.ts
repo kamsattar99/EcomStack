@@ -174,16 +174,29 @@ export interface Member {
 
 export interface MemberProfileInput {
   /**
-     * @minLength 2
-     * @maxLength 120
+     * @minLength 1
+     * @maxLength 60
      */
-  fullName: string;
+  firstName: string;
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  lastName: string;
   /** @maxLength 320 */
   email: string;
-  /** @pattern ^\+[0-9]{1,4}$ */
-  countryCode: string;
-  /** @pattern ^[0-9]{7,15}$ */
-  phone: string;
+}
+
+export type OnboardingDecisionInputDecision = typeof OnboardingDecisionInputDecision[keyof typeof OnboardingDecisionInputDecision];
+
+
+export const OnboardingDecisionInputDecision = {
+  started: 'started',
+  deferred: 'deferred',
+} as const;
+
+export interface OnboardingDecisionInput {
+  decision: OnboardingDecisionInputDecision;
 }
 
 export interface BookmarkInput {

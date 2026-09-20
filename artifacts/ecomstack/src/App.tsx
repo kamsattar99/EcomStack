@@ -57,16 +57,16 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`, // Assuming logo.svg exists, wait, we don't have one, but it's required. Let's create a placeholder or just use a generic path
   },
   variables: {
-    colorPrimary: "hsl(160, 84%, 25%)",
-    colorForeground: "hsl(210, 11%, 15%)",
-    colorMutedForeground: "hsl(210, 5%, 45%)",
+    colorPrimary: "hsl(150, 50%, 20%)",
+    colorForeground: "hsl(150, 40%, 15%)",
+    colorMutedForeground: "hsl(150, 15%, 45%)",
     colorDanger: "hsl(0, 84%, 60%)",
     colorBackground: "hsl(0, 0%, 100%)",
-    colorInput: "hsl(40, 15%, 85%)",
-    colorInputForeground: "hsl(210, 11%, 15%)",
-    colorNeutral: "hsl(40, 15%, 85%)",
+    colorInput: "hsl(40, 15%, 90%)",
+    colorInputForeground: "hsl(150, 40%, 15%)",
+    colorNeutral: "hsl(40, 15%, 90%)",
     fontFamily: "Plus Jakarta Sans, sans-serif",
-    borderRadius: "0.5rem",
+    borderRadius: "0.75rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",

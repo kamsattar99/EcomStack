@@ -48,9 +48,9 @@ export default function LibraryPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <PageMeta title="Library" description="Browse our collection of prompts, skills, and cheat sheets designed to level up your ecommerce operations." />
+      <PageMeta title="Vault" description="Browse EcomStack prompts, skills, and cheat sheets for ecommerce operators." />
       <div className="mb-12 text-center md:text-left space-y-4">
-        <h1 className="text-4xl md:text-5xl font-serif font-medium text-foreground tracking-tight">Resource Library</h1>
+        <h1 className="text-4xl md:text-5xl font-serif font-medium text-foreground tracking-tight">Vault</h1>
         <p className="text-lg text-muted-foreground max-w-3xl">Browse our collection of prompts, skills, and cheat sheets designed to level up your ecommerce operations.</p>
       </div>
 

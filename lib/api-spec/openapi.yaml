@@ -423,6 +423,39 @@
         "tags": [
           "ecomstack"
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingDecisionInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required"
+          }
+        }
+      }
+    },
+    "/onboarding/view": {
+      "post": {
+        "operationId": "recordOnboardingView",
+        "tags": [
+          "ecomstack"
+        ],
         "responses": {
           "200": {
             "description": "Success",
@@ -1750,30 +1783,42 @@
       "MemberProfileInput": {
         "type": "object",
         "properties": {
-          "fullName": {
+          "firstName": {
             "type": "string",
-            "minLength": 2,
-            "maxLength": 120
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
           },
           "email": {
             "type": "string",
             "format": "email",
             "maxLength": 320
-          },
-          "countryCode": {
-            "type": "string",
-            "pattern": "^\\+[0-9]{1,4}$"
-          },
-          "phone": {
-            "type": "string",
-            "pattern": "^[0-9]{7,15}$"
           }
         },
         "required": [
-          "fullName",
-          "email",
-          "countryCode",
-          "phone"
+          "firstName",
+          "lastName",
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "OnboardingDecisionInput": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "started",
+              "deferred"
+            ]
+          }
+        },
+        "required": [
+          "decision"
         ],
         "additionalProperties": false
       },

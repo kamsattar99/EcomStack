@@ -26,7 +26,7 @@ export function Navbar() {
           Development preview — demo resources are not published
         </div>
       )}
-      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-6">
             {/* Mobile menu */}
@@ -38,13 +38,13 @@ export function Navbar() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem asChild><Link href="/library" className="cursor-pointer">Library</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link href="/library" className="cursor-pointer">Vault</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link href="/support" className="cursor-pointer">Support</Link></DropdownMenuItem>
                   {!isSignedIn && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild><Link href="/sign-in" className="cursor-pointer">Sign In</Link></DropdownMenuItem>
-                      <DropdownMenuItem asChild><Link href="/unlock" className="cursor-pointer text-primary font-medium">Unlock Vault</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild><Link href="/sign-up" className="cursor-pointer text-primary font-medium">Create Account</Link></DropdownMenuItem>
                     </>
                   )}
                 </DropdownMenuContent>
@@ -62,12 +62,12 @@ export function Navbar() {
             {!site?.logoUrl && (site?.brandName || "EcomStack")}
           </Link>
           
-          <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-6 ml-2 text-sm font-medium">
             <Link 
               href="/library" 
               className={`transition-colors hover:text-primary ${location === '/library' ? 'text-foreground' : 'text-muted-foreground'}`}
             >
-              Library
+              Vault
             </Link>
           </nav>
         </div>
@@ -75,11 +75,11 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {!isSignedIn ? (
             <>
-              <Link href="/sign-in" className="text-sm font-medium hover:text-primary transition-colors hidden md:inline-block">
+              <Link href="/sign-in" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors hidden md:inline-block">
                 Sign In
               </Link>
               <Button asChild className="rounded-full px-6 hidden sm:inline-flex">
-                <Link href="/unlock">Unlock Vault</Link>
+                <Link href="/sign-up">Create Account</Link>
               </Button>
             </>
           ) : (
@@ -113,7 +113,7 @@ export function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link href="/library" className="cursor-pointer flex items-center">
                     <Library className="mr-2 h-4 w-4" />
-                    <span>Resource Library</span>
+                    <span>Vault</span>
                   </Link>
                 </DropdownMenuItem>
 

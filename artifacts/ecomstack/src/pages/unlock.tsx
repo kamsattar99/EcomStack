@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useStartClaim, useCompleteOnboarding, useGetMember, getGetMemberQueryKey, useUpdateMemberProfile } from "@workspace/api-client-react";
+import { useStartClaim, useCompleteOnboarding, useGetMember, getGetMemberQueryKey, useRecordOnboardingView, useUpdateMemberProfile } from "@workspace/api-client-react";
 import type { MemberProfileInput } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,11 +19,13 @@ export default function UnlockPage() {
   const { data: member, isLoading: memberLoading } = useGetMember({ query: { queryKey: getGetMemberQueryKey() } });
   const startClaim = useStartClaim();
   const completeOnboarding = useCompleteOnboarding();
+  const recordOnboardingView = useRecordOnboardingView();
   const updateMemberProfile = useUpdateMemberProfile();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [signupError, setSignupError] = useState("");
   const [signupUrl, setSignupUrl] = useState("");
+  const [shopifyOpened, setShopifyOpened] = useState(false);
   const pendingProfile = useRef<PendingProfile | null>(null);
   const profileSyncStarted = useRef(false);
   const [profileStatus, setProfileStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -51,11 +53,18 @@ export default function UnlockPage() {
     if (!clerkLoaded || profileSyncStarted.current) return;
     try {
       const raw = sessionStorage.getItem("pendingRegistrationDetails");
-      pendingProfile.current = raw ? JSON.parse(raw) as PendingProfile : null;
+      const details = raw ? JSON.parse(raw) as Partial<PendingProfile> : null;
+      pendingProfile.current = details?.firstName && details.lastName
+        ? { firstName: details.firstName, lastName: details.lastName }
+        : null;
     } catch {
       pendingProfile.current = null;
     }
     savePendingProfile();
+  }, [clerkLoaded]);
+
+  useEffect(() => {
+    if (clerkLoaded) recordOnboardingView.mutate();
   }, [clerkLoaded]);
 
   useEffect(() => {
@@ -92,6 +101,7 @@ export default function UnlockPage() {
   const handleStart = () => {
     setSignupError("");
     setSignupUrl("");
+    setShopifyOpened(false);
     const partnerTab = window.open("about:blank", "_blank");
     if (partnerTab) partnerTab.opener = null;
     let resourceSlug: string | undefined;
@@ -101,7 +111,10 @@ export default function UnlockPage() {
     startClaim.mutate({ data: { resourceSlug } }, {
       onSuccess: (result) => {
         if (partnerTab && !partnerTab.closed) {
-          try { partnerTab.location.replace(result.redirectUrl); }
+          try {
+            partnerTab.location.replace(result.redirectUrl);
+            setShopifyOpened(true);
+          }
           catch {
             partnerTab.close();
             setSignupUrl(SHOPIFY_FALLBACK_URL);
@@ -120,8 +133,8 @@ export default function UnlockPage() {
     });
   };
 
-  const handleContinue = () => {
-    completeOnboarding.mutate(undefined, {
+  const handleContinue = (decision: "started" | "deferred") => {
+    completeOnboarding.mutate({ data: { decision } }, {
       onSuccess: () => {
         let resourceSlug: string | null = null;
         try { resourceSlug = sessionStorage.getItem('pendingResourceSlug'); }
@@ -144,108 +157,58 @@ export default function UnlockPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 md:py-24 max-w-3xl">
-      <PageMeta title="Start your Shopify store" />
-
-      <div className="mb-8 flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        <span>1. Your details</span>
+    <div className="min-h-[100dvh] bg-[#f4f6f1] px-4 py-8 text-[#17231f] sm:px-6 sm:py-12">
+      <PageMeta title="Start your store | EcomStack" />
+      <div className="mx-auto w-full max-w-xl">
+        <Link href="/" className="mb-12 inline-flex items-center gap-3 text-sm font-semibold tracking-[0.16em] text-[#193c36]">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#193c36] text-[#d7ef9b]">E</span>
+          ECOMSTACK
+        </Link>
+        <div className="mb-8 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#6c7b72]">
+        <span>1. Create your account</span>
         <span aria-hidden="true">→</span>
         <span className="text-primary">2. Start Shopify</span>
         <span aria-hidden="true">→</span>
-        <span>3. Open the vault</span>
-      </div>
+        <span>3. Open the Vault</span>
+        </div>
 
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-medium tracking-tight mb-4 text-foreground">
-          Start your Shopify store.
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Set up your store so you can follow along and put your EcomStack resources into action.
-        </p>
-      </div>
+        <Card className="overflow-hidden border-[#d5dfd4] bg-[#fbfcf8] shadow-[0_18px_50px_rgba(25,60,54,0.08)]">
+          <CardContent className="p-7 sm:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#6c7b72]">A quick recommendation</p>
+            <h1 className="mt-5 font-serif text-4xl leading-[1.04] tracking-[-0.04em] text-[#193c36] sm:text-5xl">Start your store. Put the Vault to work.</h1>
+            <p className="mt-6 text-base leading-7 text-[#607069]">If you’re opening a new Shopify store, please start through my link. It supports EcomStack and gives you a place to put these resources into practice.</p>
+            <p className="mt-5 text-sm font-semibold text-[#193c36]">Kamil · EcomStack</p>
 
-      <div className="grid gap-8 items-start mb-12">
-        <Card className="border-border shadow-sm overflow-hidden bg-card">
-          <CardContent className="p-8 md:p-10 space-y-10">
-            <div className="flex gap-5">
-              <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-base font-medium shrink-0">1</div>
-              <div className="flex-1">
-                <h4 className="font-medium text-foreground text-lg mb-2">Start Shopify through our link</h4>
-                <p className="text-muted-foreground mb-6">
-                  Shopify opens in a new tab, so you can keep this guide open while you set up.
-                </p>
-                <div className="space-y-4 max-w-sm">
-                  <Button
-                    size="lg"
-                    className="w-full shadow-sm text-base h-12"
-                    onClick={handleStart}
-                    disabled={startClaim.isPending}
-                  >
-                    {startClaim.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ExternalLink className="mr-2 h-5 w-5" />}
-                    Start Shopify through our link
+            {shopifyOpened ? (
+              <div className="mt-9 rounded-xl border border-[#d7e5bc] bg-[#eff6dd] p-5">
+                <p className="font-semibold text-[#193c36]">Shopify opened in a new tab.</p>
+                <p className="mt-1 text-sm leading-6 text-[#53645d]">When you’re ready, return here to start using the Vault.</p>
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                  <Button onClick={() => handleContinue("started")} disabled={completeOnboarding.isPending} className="bg-[#193c36] text-[#f4f6f1] hover:bg-[#24584e]">
+                    {completeOnboarding.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Open my Vault
                   </Button>
-                  <p className="text-xs text-center text-muted-foreground italic">
-                    We may earn a commission if you sign up through this link.
-                  </p>
-
-                  {signupError && (
-                    <Alert variant="destructive" className="mt-4">
-                      <AlertTitle>Couldn't open Shopify</AlertTitle>
-                      <AlertDescription>{signupError}</AlertDescription>
-                    </Alert>
-                  )}
-                  {signupUrl && (
-                    <div className="w-full text-center mt-4">
-                      <p className="text-sm text-muted-foreground mb-2">If nothing opened, use the backup link:</p>
-                      <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-primary font-medium hover:underline underline-offset-4">
-                        Open Shopify signup
-                      </a>
-                    </div>
-                  )}
+                  <Button variant="outline" onClick={handleStart} disabled={startClaim.isPending}>Reopen Shopify</Button>
                 </div>
               </div>
-            </div>
-            
-            <div className="flex gap-5">
-              <div className="w-10 h-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-base font-medium shrink-0">2</div>
-              <div>
-                <h4 className="font-medium text-foreground text-lg mb-2">Follow Shopify's signup steps</h4>
-                <p className="text-muted-foreground">
-                  Follow Shopify’s signup steps, then return here to explore your resources.
-                </p>
+            ) : (
+              <div className="mt-9">
+                <Button size="lg" className="h-13 w-full bg-[#193c36] text-base text-[#f4f6f1] hover:bg-[#24584e]" onClick={handleStart} disabled={startClaim.isPending}>
+                  {startClaim.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ExternalLink className="mr-2 h-5 w-5" />}
+                  Start Shopify through my link
+                </Button>
+                <p className="mt-3 text-center text-sm text-[#607069]">Opens in a new tab. Review Shopify’s current offer and terms there.</p>
+                <p className="mt-4 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
+                <Button variant="ghost" className="mt-4 w-full text-[#53645d] hover:text-[#193c36]" onClick={() => handleContinue("deferred")} disabled={completeOnboarding.isPending}>
+                  I’ll do this later — open the Vault
+                </Button>
               </div>
-            </div>
+            )}
 
-            <div className="flex gap-5">
-              <div className="w-10 h-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center text-base font-medium shrink-0">3</div>
-              <div>
-                <h4 className="font-medium text-foreground text-lg mb-2">Return to EcomStack</h4>
-                <p className="text-muted-foreground">Your EcomStack vault is ready when you are.</p>
-              </div>
-            </div>
+            {signupError && <Alert variant="destructive" className="mt-6"><AlertTitle>Couldn't open Shopify</AlertTitle><AlertDescription>{signupError}</AlertDescription></Alert>}
+            {signupUrl && <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-sm font-semibold text-[#193c36] underline underline-offset-4">Open the Shopify backup link</a>}
           </CardContent>
         </Card>
-      </div>
-
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <Button
-          variant="default"
-          size="lg"
-          onClick={handleContinue}
-          disabled={completeOnboarding.isPending}
-          className="rounded-full px-10 h-14 text-base shadow-sm hover:shadow-md transition-all"
-        >
-          {completeOnboarding.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-          Continue to the vault
-          {!completeOnboarding.isPending && <ArrowRight className="ml-2 h-5 w-5" />}
-        </Button>
-        <button
-          onClick={handleContinue}
-          disabled={completeOnboarding.isPending}
-          className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors mt-4"
-        >
-          Continue without starting Shopify
-        </button>
       </div>
     </div>
   );

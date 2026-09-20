@@ -107,14 +107,14 @@ router.get("/me", requireUser, async (req, res): Promise<void> => {
 
 router.put("/me/profile", requireUser, sameOrigin, async (req, res): Promise<void> => {
   const body = UpdateMemberProfileBody.strict().safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: "Enter a valid name, email address and international phone number" }); return; }
-  const fullName = body.data.fullName.trim().replace(/\s+/g, " ");
+  if (!body.success) { res.status(400).json({ error: "Enter your first name, last name and a valid email address" }); return; }
+  const firstName = body.data.firstName.trim().replace(/\s+/g, " ");
+  const lastName = body.data.lastName.trim().replace(/\s+/g, " ");
+  const fullName = `${firstName} ${lastName}`;
   const email = body.data.email.trim().toLowerCase();
-  const countryCode = body.data.countryCode.trim();
-  const phone = body.data.phone.replace(/\D/g, "");
-  if (fullName.length < 2 || fullName.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-      !/^\+\d{1,4}$/.test(countryCode) || !/^\d{7,15}$/.test(phone)) {
-    res.status(400).json({ error: "Enter a valid name, email address and international phone number" }); return;
+  if (firstName.length < 1 || firstName.length > 60 || lastName.length < 1 || lastName.length > 60 ||
+      fullName.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    res.status(400).json({ error: "Enter your first name, last name and a valid email address" }); return;
   }
   const clerkUser = await clerkClient.users.getUser(req.ecomUser!.clerkId);
   const verifiedEmails = clerkUser.emailAddresses
@@ -123,7 +123,7 @@ router.put("/me/profile", requireUser, sameOrigin, async (req, res): Promise<voi
   if (!verifiedEmails.includes(email)) {
     res.status(400).json({ error: "Email address must match your verified account email" }); return;
   }
-  await db.update(usersTable).set({ fullName, email, phoneCountryCode: countryCode, phoneNumber: phone }).where(eq(usersTable.id, req.ecomUser!.id));
+  await db.update(usersTable).set({ fullName, email }).where(eq(usersTable.id, req.ecomUser!.id));
   res.json({ message: "Member profile saved" });
 });
 

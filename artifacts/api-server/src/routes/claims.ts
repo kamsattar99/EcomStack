@@ -1,6 +1,6 @@
 import { and, eq, gt, lt, or, isNull } from "drizzle-orm";
 import { activityTable, claimsTable, db, resourcesTable } from "@workspace/db";
-import { CheckClaimResponse, StartClaimBody, StartClaimResponse } from "@workspace/api-zod";
+import { CheckClaimResponse, CompleteOnboardingBody, StartClaimBody, StartClaimResponse } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
 import { requireUser, sameOrigin } from "../lib/auth";
 import { defaults } from "../lib/domain";
@@ -67,9 +67,19 @@ router.post("/claims/check", requireUser, sameOrigin, async (req, res): Promise<
 
 /** Records an optional product-onboarding choice; it never confers a referral or entitlement. */
 router.post("/onboarding/complete", requireUser, sameOrigin, async (req, res): Promise<void> => {
+  const body = CompleteOnboardingBody.strict().safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Invalid onboarding choice" }); return; }
   const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
     .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
   if (!existing) await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: "onboarding_completed" });
+  await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: body.data.decision === "started" ? "onboarding_started" : "onboarding_deferred" });
   res.json(CheckClaimResponse.parse({ message: "Onboarding complete" }));
+});
+
+router.post("/onboarding/view", requireUser, sameOrigin, async (req, res): Promise<void> => {
+  const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
+    .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_viewed"))).limit(1);
+  if (!existing) await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: "onboarding_viewed" });
+  res.json(CheckClaimResponse.parse({ message: "Onboarding viewed" }));
 });
 export default router;

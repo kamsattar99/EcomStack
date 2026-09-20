@@ -29,6 +29,8 @@ export * from './member';
 export * from './memberProfileInput';
 export * from './memberRole';
 export * from './message';
+export * from './onboardingDecisionInput';
+export * from './onboardingDecisionInputDecision';
 export * from './protectedContent';
 export * from './resource';
 export * from './resourceDetail';

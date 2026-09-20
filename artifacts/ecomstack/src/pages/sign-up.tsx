@@ -1,4 +1,4 @@
-import { ArrowRight, Check, LockKeyhole, Phone, UserRound } from "lucide-react";
+import { ArrowRight, Check, LockKeyhole, UserRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useUser } from "@clerk/react";
@@ -8,15 +8,13 @@ import { Label } from "@/components/ui/label";
 import { PageMeta } from "@/components/page-meta";
 
 type RegistrationDetails = {
-  fullName: string;
-  countryCode: string;
-  phone: string;
+  firstName: string;
+  lastName: string;
 };
 
 const initialDetails: RegistrationDetails = {
-  fullName: "",
-  countryCode: "+1",
-  phone: "",
+  firstName: "",
+  lastName: "",
 };
 
 function savedDetails(): RegistrationDetails {
@@ -30,14 +28,8 @@ function savedDetails(): RegistrationDetails {
 
 function validate(details: RegistrationDetails) {
   const errors: Partial<Record<keyof RegistrationDetails, string>> = {};
-  if (details.fullName.trim().length < 2) errors.fullName = "Enter your full name.";
-  if (!/^\+\d{1,4}$/.test(details.countryCode.trim())) {
-    errors.countryCode = "Use a country code such as +1 or +44.";
-  }
-  const phoneDigits = details.phone.replace(/\D/g, "");
-  if (phoneDigits.length < 7 || phoneDigits.length > 15) {
-    errors.phone = "Enter a phone number with 7 to 15 digits.";
-  }
+  if (details.firstName.trim().length < 1) errors.firstName = "Enter your first name.";
+  if (details.lastName.trim().length < 1) errors.lastName = "Enter your last name.";
   return errors;
 }
 
@@ -57,9 +49,8 @@ export default function SignUpPage() {
     event.preventDefault();
     setSubmitted(true);
     setTouched({
-      fullName: true,
-      countryCode: true,
-      phone: true,
+      firstName: true,
+      lastName: true,
     });
     if (Object.keys(errors).length > 0) return;
 
@@ -68,9 +59,8 @@ export default function SignUpPage() {
         "pendingRegistrationDetails",
         JSON.stringify({
           ...details,
-          fullName: details.fullName.trim(),
-          countryCode: details.countryCode.trim(),
-          phone: details.phone.replace(/\D/g, ""),
+          firstName: details.firstName.trim(),
+          lastName: details.lastName.trim(),
         }),
       );
     } catch {
@@ -149,65 +139,37 @@ export default function SignUpPage() {
 
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div>
-                <Label htmlFor="full-name" className="mb-2 block text-[#31483f]">Full name</Label>
+                <Label htmlFor="first-name" className="mb-2 block text-[#31483f]">First name</Label>
                 <div className="relative">
                   <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#829089]" />
                   <Input
-                    id="full-name"
-                    autoComplete="name"
-                    value={details.fullName}
-                    onChange={(event) => update("fullName", event.target.value)}
-                    onBlur={() => setTouched((current) => ({ ...current, fullName: true }))}
-                    placeholder="Your name"
-                    className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("fullName") ? "border-red-400" : ""}`}
+                    id="first-name"
+                    autoComplete="given-name"
+                    value={details.firstName}
+                    onChange={(event) => update("firstName", event.target.value)}
+                    onBlur={() => setTouched((current) => ({ ...current, firstName: true }))}
+                    placeholder="First name"
+                    className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("firstName") ? "border-red-400" : ""}`}
                   />
                 </div>
-                {fieldError("fullName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("fullName")}</p>}
+                {fieldError("firstName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("firstName")}</p>}
               </div>
 
               <div>
-                <Label htmlFor="phone" className="mb-2 block text-[#31483f]">Phone number</Label>
-                <div className="flex gap-2">
-                  <select
-                    id="country-code"
-                    aria-label="Country code"
-                    value={details.countryCode}
-                    onChange={(event) => update("countryCode", event.target.value)}
-                    onBlur={() => setTouched((current) => ({ ...current, countryCode: true }))}
-                    className={`h-11 w-[104px] rounded-md border border-[#d3ddd3] bg-[#fbfcf8] px-2 text-sm text-[#193c36] outline-none focus:ring-2 focus:ring-[#193c36] ${fieldError("countryCode") ? "border-red-400" : ""}`}
-                  >
-                    <option value="+1">US/CA +1</option>
-                    <option value="+44">UK +44</option>
-                    <option value="+61">AU +61</option>
-                    <option value="+64">NZ +64</option>
-                    <option value="+27">ZA +27</option>
-                    <option value="+353">IE +353</option>
-                    <option value="+33">FR +33</option>
-                    <option value="+49">DE +49</option>
-                    <option value="+31">NL +31</option>
-                    <option value="+971">UAE +971</option>
-                    <option value="+966">SA +966</option>
-                    <option value="+91">IN +91</option>
-                    <option value="+92">PK +92</option>
-                  </select>
-                  <div className="relative flex-1">
-                    <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#829089]" />
-                    <Input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      inputMode="tel"
-                      value={details.phone}
-                      onChange={(event) => update("phone", event.target.value)}
-                      onBlur={() => setTouched((current) => ({ ...current, phone: true }))}
-                      placeholder="555 014 2088"
-                      className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("phone") ? "border-red-400" : ""}`}
-                    />
-                  </div>
+                <Label htmlFor="last-name" className="mb-2 block text-[#31483f]">Last name</Label>
+                <div className="relative">
+                  <UserRound className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-[#829089]" />
+                  <Input
+                    id="last-name"
+                    autoComplete="family-name"
+                    value={details.lastName}
+                    onChange={(event) => update("lastName", event.target.value)}
+                    onBlur={() => setTouched((current) => ({ ...current, lastName: true }))}
+                    placeholder="Last name"
+                    className={`h-11 border-[#d3ddd3] bg-[#fbfcf8] pl-10 text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-[#193c36] ${fieldError("lastName") ? "border-red-400" : ""}`}
+                  />
                 </div>
-                {(fieldError("countryCode") || fieldError("phone")) && (
-                  <p className="mt-1.5 text-xs text-red-600">{fieldError("countryCode") || fieldError("phone")}</p>
-                )}
+                {fieldError("lastName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("lastName")}</p>}
               </div>
 
               <div className="flex items-start gap-3 border-t border-[#dce4dc] pt-5 text-sm leading-6 text-[#6c7b72]">

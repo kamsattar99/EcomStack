@@ -35,6 +35,7 @@ import type {
   Member,
   MemberProfileInput,
   Message,
+  OnboardingDecisionInput,
   ProtectedContent,
   Resource,
   ResourceDetail,
@@ -850,9 +851,91 @@ export const getCompleteOnboardingUrl = () => {
   return `/api/onboarding/complete`
 }
 
-export const completeOnboarding = async ( options?: Parameters<typeof customFetch>[1]): Promise<Message> => {
+export const completeOnboarding = async (onboardingDecisionInput: OnboardingDecisionInput, options?: Parameters<typeof customFetch>[1]): Promise<Message> => {
 
-  return customFetch<Message>(getCompleteOnboardingUrl(),
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Message>(getCompleteOnboardingUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(onboardingDecisionInput)
+  }
+);}
+
+
+
+
+
+export const getCompleteOnboardingMutationKey = () => ['completeOnboarding'] as const;
+
+export const getCompleteOnboardingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,CompleteOnboardingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,CompleteOnboardingMutationVariables, TContext> => {
+
+const mutationKey = getCompleteOnboardingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeOnboarding>>, CompleteOnboardingMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  completeOnboarding(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof completeOnboarding>>>
+    export type CompleteOnboardingMutationBody = BodyType<OnboardingDecisionInput>
+    export type CompleteOnboardingMutationError = ErrorType<void>
+    export type CompleteOnboardingMutationVariables = {data: BodyType<OnboardingDecisionInput>}
+
+    export const useCompleteOnboarding = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,CompleteOnboardingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeOnboarding>>,
+        TError,
+        CompleteOnboardingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCompleteOnboardingMutationOptions(options));
+    }
+
+export const getRecordOnboardingViewUrl = () => {
+
+
+
+
+  return `/api/onboarding/view`
+}
+
+export const recordOnboardingView = async ( options?: Parameters<typeof customFetch>[1]): Promise<Message> => {
+
+  return customFetch<Message>(getRecordOnboardingViewUrl(),
   {
     ...options,
     method: 'POST'
@@ -865,13 +948,13 @@ export const completeOnboarding = async ( options?: Parameters<typeof customFetc
 
 
 
-export const getCompleteOnboardingMutationKey = () => ['completeOnboarding'] as const;
+export const getRecordOnboardingViewMutationKey = () => ['recordOnboardingView'] as const;
 
-export const getCompleteOnboardingMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,void, TContext> => {
+export const getRecordOnboardingViewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordOnboardingView>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordOnboardingView>>, TError,void, TContext> => {
 
-const mutationKey = getCompleteOnboardingMutationKey();
+const mutationKey = getRecordOnboardingViewMutationKey();
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -881,10 +964,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeOnboarding>>, void> = () => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordOnboardingView>>, void> = () => {
 
 
-          return  completeOnboarding(requestOptions)
+          return  recordOnboardingView(requestOptions)
         }
 
 
@@ -894,20 +977,20 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CompleteOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof completeOnboarding>>>
+    export type RecordOnboardingViewMutationResult = NonNullable<Awaited<ReturnType<typeof recordOnboardingView>>>
 
-    export type CompleteOnboardingMutationError = ErrorType<void>
+    export type RecordOnboardingViewMutationError = ErrorType<void>
 
 
-    export const useCompleteOnboarding = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useRecordOnboardingView = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordOnboardingView>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof completeOnboarding>>,
+        Awaited<ReturnType<typeof recordOnboardingView>>,
         TError,
         void,
         TContext
       > => {
-      return useMutation(getCompleteOnboardingMutationOptions(options));
+      return useMutation(getRecordOnboardingViewMutationOptions(options));
     }
 
 export const getCheckClaimUrl = () => {

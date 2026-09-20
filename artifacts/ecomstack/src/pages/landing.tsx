@@ -74,14 +74,14 @@ export default function LandingPage() {
           <div className="mx-auto max-w-[800px] text-center">
             <div className="landing-enter landing-enter-1 flex flex-wrap items-center justify-center gap-2 text-sm text-[#456056]">
               <span className="mr-1 text-xs font-bold uppercase tracking-[0.15em] text-[#6b7d74]">Built by</span>
-              <a href="https://www.youtube.com/@THEECOMKING" target="_blank" rel="noopener noreferrer" aria-label="Visit The Ecom King on YouTube" className="creator-profile">
-                <img src="https://yt3.googleusercontent.com/rNSQYz_JJUsDMsa_MW2fXUYyVVJP27aOPiQqyn3prdHDCtwyUdxR2EeyPUQ3GLR58hQFY1stbA=s160-c-k-c0x00ffffff-no-rj" alt="The Ecom King YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
-                <span>The Ecom King</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
+              <a href="https://www.youtube.com/channel/UCekIx7k0LtWGyovlIgC_2Kg" target="_blank" rel="noopener noreferrer" aria-label="Visit Kamil Sattar Make Money With AI on YouTube" className="creator-profile">
+                <img src="https://yt3.googleusercontent.com/rNSQYz_JJUsDMsa_MW2fXUYyVVJP27aOPiQqyn3prdHDCtwyUdxR2EeyPUQ3GLR58hQFY1stbA=s160-c-k-c0x00ffffff-no-rj" alt="Kamil Sattar Make Money With AI YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
+                <span>Kamil Sattar | Make Money With AI</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
               </a>
               <span aria-hidden="true" className="font-serif text-base text-[#789087]">&amp;</span>
-              <a href="https://www.youtube.com/channel/UCekIx7k0LtWGyovlIgC_2Kg" target="_blank" rel="noopener noreferrer" aria-label="Visit Kamil Sattar Make Money With AI on YouTube" className="creator-profile">
-                <img src="https://yt3.googleusercontent.com/kiqUOuI8Z2s4Fu_OUfGJKGwKTuzbA7b2moQHDVqSErfMgQ5MvsekZ3B33yZOZDSZWjdusi60iII=s160-c-k-c0x00ffffff-no-rj" alt="Kamil Sattar Make Money With AI YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
-                <span>Kamil Sattar | Make Money With AI</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
+              <a href="https://www.youtube.com/@THEECOMKING" target="_blank" rel="noopener noreferrer" aria-label="Visit The Ecom King on YouTube" className="creator-profile">
+                <img src="https://yt3.googleusercontent.com/kiqUOuI8Z2s4Fu_OUfGJKGwKTuzbA7b2moQHDVqSErfMgQ5MvsekZ3B33yZOZDSZWjdusi60iII=s160-c-k-c0x00ffffff-no-rj" alt="The Ecom King YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
+                <span>The Ecom King</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
               </a>
             </div>
             <p className="landing-enter landing-enter-2 mt-5 inline-flex rounded-full border border-[#cdddcf] bg-white/80 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-[#2F765F] shadow-sm">

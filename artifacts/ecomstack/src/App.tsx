@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { ClerkProvider, SignIn, useClerk, useUser } from '@clerk/react';
+import { ClerkProvider, useClerk, useUser } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { shadcn } from '@clerk/themes';
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wouter';
@@ -28,6 +28,7 @@ import { useGetMember, getGetMemberQueryKey } from "@workspace/api-client-react"
 import { Navbar } from "@/components/navbar";
 import SignUpDetailsPage from "@/pages/sign-up";
 import SignUpAuthPage from "@/pages/sign-up-auth";
+import SignInPage from "@/pages/sign-in";
 
 const queryClient = new QueryClient();
 
@@ -70,13 +71,13 @@ const clerkAppearance = {
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-sm border border-border",
+    cardBox: "w-[440px] max-w-full overflow-hidden rounded-3xl border border-[#dfe7df] bg-white shadow-[0_18px_50px_rgba(25,60,54,0.10)]",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "font-serif text-2xl font-medium text-foreground",
+    headerTitle: "font-serif text-2xl font-medium text-[#14251F]",
     headerSubtitle: "text-muted-foreground",
-    socialButtonsBlockButtonText: "font-medium",
-    formFieldLabel: "text-sm font-medium",
+    socialButtonsBlockButtonText: "!text-[#14251F] font-medium",
+    formFieldLabel: "text-sm font-medium !text-[#14251F]",
     footerActionLink: "font-medium text-primary hover:text-primary/80",
     footerActionText: "text-muted-foreground",
     dividerText: "text-muted-foreground",
@@ -85,9 +86,9 @@ const clerkAppearance = {
     alertText: "text-sm",
     logoBox: "mb-6",
     logoImage: "h-8",
-    socialButtonsBlockButton: "border-border hover:bg-secondary",
-    formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-md",
-    formFieldInput: "border-input bg-white rounded-md",
+    socialButtonsBlockButton: "!min-h-12 !border-[#d3ddd3] !bg-white !text-[#14251F] hover:!bg-[#E8F1E6] rounded-xl",
+    formButtonPrimary: "!min-h-12 !rounded-xl !bg-[#193C36] !text-white hover:!bg-[#2F765F]",
+    formFieldInput: "!min-h-12 !rounded-xl !border !border-[#d3ddd3] !bg-white !text-[#14251F] !shadow-none focus-visible:!ring-2 focus-visible:!ring-[#2F765F]",
     footerAction: "mt-4",
     dividerLine: "bg-border",
     alert: "border-destructive text-destructive",
@@ -96,14 +97,6 @@ const clerkAppearance = {
     main: "w-full",
   },
 };
-
-function SignInPage() {
-  return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} fallbackRedirectUrl={`${basePath}/dashboard`} />
-    </div>
-  );
-}
 
 function SignUpPage() {
   return <SignUpDetailsPage />;

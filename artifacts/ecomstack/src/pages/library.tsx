@@ -24,6 +24,7 @@ export default function LibraryPage() {
   const [tool, setTool] = useState(searchParams.get("tool") || "");
   const [sort, setSort] = useState("newest");
   const [, setLocation] = useLocation();
+  const returnPath = `${window.location.pathname}${window.location.search}`;
 
   const { data: library, isLoading } = useListResources({
     search: search || undefined,
@@ -154,7 +155,7 @@ export default function LibraryPage() {
           ) : library?.resources && library.resources.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {library.resources.map((resource) => (
-                <Link key={resource.id} href={`/resources/${resource.slug}`}>
+                <Link key={resource.id} href={`/resources/${resource.slug}?from=${encodeURIComponent(returnPath)}`}>
                   <div className="group flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-all hover:border-primary/30 active-elevate-2 cursor-pointer">
                     <div className="aspect-[16/9] relative bg-secondary overflow-hidden">
                       {resource.coverUrl ? (

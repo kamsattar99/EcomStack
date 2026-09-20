@@ -237,12 +237,15 @@ export const updateMemberProfileBodyLastNameMax = 60;
 
 export const updateMemberProfileBodyEmailMax = 320;
 
+export const updateMemberProfileBodyPhoneNumberMax = 32;
+
 
 
 export const UpdateMemberProfileBody = zod.object({
   "firstName": zod.string().min(1).max(updateMemberProfileBodyFirstNameMax),
   "lastName": zod.string().min(1).max(updateMemberProfileBodyLastNameMax),
-  "email": zod.string().email().max(updateMemberProfileBodyEmailMax)
+  "email": zod.string().email().max(updateMemberProfileBodyEmailMax),
+  "phoneNumber": zod.string().max(updateMemberProfileBodyPhoneNumberMax).optional()
 })
 
 export const UpdateMemberProfileResponse = zod.object({

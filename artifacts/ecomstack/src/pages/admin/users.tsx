@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
               </div>
               <div className="space-y-2 text-sm">
                 <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {user.email || "No email saved"}</p>
-                <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {user.phoneNumber ? `${user.phoneCountryCode} ${user.phoneNumber}` : "No phone saved"}</p>
+                <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {user.phoneNumber ? [user.phoneCountryCode, user.phoneNumber].filter(Boolean).join(" ") : "No phone saved"}</p>
               </div>
               <div className="flex items-center justify-between gap-3 border-t pt-4">
                 {onboardingBadge(user.onboardingCompleted)}
@@ -89,7 +89,7 @@ export default function AdminUsersPage() {
                     </div>
                   </TableCell>
                   <TableCell>{user.email || "—"}</TableCell>
-                  <TableCell>{user.phoneNumber ? `${user.phoneCountryCode} ${user.phoneNumber}` : "—"}</TableCell>
+                  <TableCell>{user.phoneNumber ? [user.phoneCountryCode, user.phoneNumber].filter(Boolean).join(" ") : "—"}</TableCell>
                   <TableCell>{onboardingBadge(user.onboardingCompleted)}</TableCell>
                   <TableCell className="text-muted-foreground">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell><Badge variant="secondary">{user.role}</Badge></TableCell>

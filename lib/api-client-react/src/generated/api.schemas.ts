@@ -224,6 +224,8 @@ export interface MemberProfileInput {
   lastName: string;
   /** @maxLength 320 */
   email: string;
+  /** @maxLength 32 */
+  phoneNumber?: string;
 }
 
 export type OnboardingDecisionInputDecision = typeof OnboardingDecisionInputDecision[keyof typeof OnboardingDecisionInputDecision];

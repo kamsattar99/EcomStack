@@ -12,11 +12,13 @@ import { SignupResourceIllustration } from "@/components/signup-resource-illustr
 type RegistrationDetails = {
   firstName: string;
   lastName: string;
+  phoneNumber: string;
 };
 
 const initialDetails: RegistrationDetails = {
   firstName: "",
   lastName: "",
+  phoneNumber: "",
 };
 
 function savedDetails(): RegistrationDetails {
@@ -32,6 +34,7 @@ function validate(details: RegistrationDetails) {
   const errors: Partial<Record<keyof RegistrationDetails, string>> = {};
   if (details.firstName.trim().length < 1) errors.firstName = "Enter your first name.";
   if (details.lastName.trim().length < 1) errors.lastName = "Enter your last name.";
+  if (details.phoneNumber.trim() && !/^[+0-9][0-9 ()-]{5,31}$/.test(details.phoneNumber.trim())) errors.phoneNumber = "Enter a valid phone number.";
   return errors;
 }
 
@@ -54,6 +57,7 @@ export default function SignUpPage() {
     setTouched({
       firstName: true,
       lastName: true,
+      phoneNumber: true,
     });
     if (Object.keys(errors).length > 0) return;
 
@@ -64,6 +68,7 @@ export default function SignUpPage() {
           ...details,
           firstName: details.firstName.trim(),
           lastName: details.lastName.trim(),
+           phoneNumber: details.phoneNumber.trim(),
         }),
       );
     } catch {
@@ -123,6 +128,11 @@ export default function SignUpPage() {
                 <Input id="last-name" autoComplete="family-name" value={details.lastName} onChange={(event) => update("lastName", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, lastName: true }))} placeholder="Last name" className={`h-12 rounded-xl border-[#d3ddd3] bg-white text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-2 focus-visible:ring-[#2F765F] ${fieldError("lastName") ? "border-red-400" : ""}`} />
                 {fieldError("lastName") && <p className="mt-1.5 text-xs text-red-600">{fieldError("lastName")}</p>}
               </div>
+              </div>
+              <div>
+                <Label htmlFor="phone-number" className="mb-2 flex items-center gap-2 text-[#31483f]">Phone number <span className="text-xs font-normal text-[#6c7b72]">(optional)</span></Label>
+                <Input id="phone-number" type="tel" inputMode="tel" autoComplete="tel" value={details.phoneNumber} onChange={(event) => update("phoneNumber", event.target.value)} onBlur={() => setTouched((current) => ({ ...current, phoneNumber: true }))} placeholder="+44 7700 900000" className={`h-12 rounded-xl border-[#d3ddd3] bg-white text-[#193c36] placeholder:text-[#9aa69e] focus-visible:ring-2 focus-visible:ring-[#2F765F] ${fieldError("phoneNumber") ? "border-red-400" : ""}`} />
+                {fieldError("phoneNumber") && <p className="mt-1.5 text-xs text-red-600">{fieldError("phoneNumber")}</p>}
               </div>
 
               <div className="flex items-start gap-3 border-t border-[#dce4dc] pt-5 text-sm leading-6 text-[#6c7b72]">

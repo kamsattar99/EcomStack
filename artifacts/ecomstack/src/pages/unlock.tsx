@@ -58,7 +58,7 @@ export default function UnlockPage() {
       const raw = sessionStorage.getItem("pendingRegistrationDetails");
       const details = raw ? JSON.parse(raw) as Partial<PendingProfile> : null;
       pendingProfile.current = details?.firstName && details.lastName
-        ? { firstName: details.firstName, lastName: details.lastName }
+        ? { firstName: details.firstName, lastName: details.lastName, ...(details.phoneNumber ? { phoneNumber: details.phoneNumber } : {}) }
         : null;
     } catch {
       pendingProfile.current = null;

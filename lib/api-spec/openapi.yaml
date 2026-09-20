@@ -2063,6 +2063,10 @@
             "type": "string",
             "format": "email",
             "maxLength": 320
+          },
+          "phoneNumber": {
+            "type": "string",
+            "maxLength": 32
           }
         },
         "required": [

@@ -113,14 +113,16 @@ router.get("/me", requireUser, async (req, res): Promise<void> => {
 
 router.put("/me/profile", requireUser, sameOrigin, async (req, res): Promise<void> => {
   const body = UpdateMemberProfileBody.strict().safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: "Enter your first name, last name and a valid email address" }); return; }
+  if (!body.success) { res.status(400).json({ error: "Enter your first name, last name, a valid email address, and a valid phone number if provided" }); return; }
   const firstName = body.data.firstName.trim().replace(/\s+/g, " ");
   const lastName = body.data.lastName.trim().replace(/\s+/g, " ");
   const fullName = `${firstName} ${lastName}`;
   const email = body.data.email.trim().toLowerCase();
+  const phoneNumber = body.data.phoneNumber?.trim() || null;
   if (firstName.length < 1 || firstName.length > 60 || lastName.length < 1 || lastName.length > 60 ||
-      fullName.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    res.status(400).json({ error: "Enter your first name, last name and a valid email address" }); return;
+      fullName.length > 120 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+      (phoneNumber !== null && !/^[+0-9][0-9 ()-]{5,31}$/.test(phoneNumber))) {
+    res.status(400).json({ error: "Enter your first name, last name, a valid email address, and a valid phone number if provided" }); return;
   }
   const clerkUser = await clerkClient.users.getUser(req.ecomUser!.clerkId);
   const verifiedEmails = clerkUser.emailAddresses
@@ -129,7 +131,7 @@ router.put("/me/profile", requireUser, sameOrigin, async (req, res): Promise<voi
   if (!verifiedEmails.includes(email)) {
     res.status(400).json({ error: "Email address must match your verified account email" }); return;
   }
-  await db.update(usersTable).set({ fullName, email }).where(eq(usersTable.id, req.ecomUser!.id));
+  await db.update(usersTable).set({ fullName, email, phoneNumber }).where(eq(usersTable.id, req.ecomUser!.id));
   res.json({ message: "Member profile saved" });
 });
 

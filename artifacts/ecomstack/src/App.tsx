@@ -57,7 +57,7 @@ const clerkAppearance = {
   options: {
     logoPlacement: "inside" as const,
     logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`, // Assuming logo.svg exists, wait, we don't have one, but it's required. Let's create a placeholder or just use a generic path
+    logoImageUrl: `${window.location.origin}${basePath}/favicon.svg`,
   },
   variables: {
     colorPrimary: "hsl(150, 50%, 20%)",

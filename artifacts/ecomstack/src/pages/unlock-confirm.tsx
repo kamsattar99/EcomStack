@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
-import { useCompleteOnboarding, useGetMember, getGetMemberQueryKey, useSaveOnboardingReview, useStartClaim } from "@workspace/api-client-react";
+import { useEffect } from "react";
+import { useCompleteOnboarding, useGetMember, getGetMemberQueryKey, useSaveOnboardingReview } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AppLogo } from "@/components/app-logo";
 import { ShopifyTile } from "@/components/shopify-tile";
 import { ExternalLink, Loader2, Check } from "lucide-react";
@@ -11,18 +10,15 @@ import { PageMeta } from "@/components/page-meta";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
-const SHOPIFY_FALLBACK_URL = "https://shopify.pxf.io/the-ecom-king";
+const SHOPIFY_AFFILIATE_URL = "https://shopify.pxf.io/the-ecom-king";
 
 export default function UnlockConfirmPage() {
   const { data: member, isLoading: memberLoading } = useGetMember({ query: { queryKey: getGetMemberQueryKey() } });
   const completeOnboarding = useCompleteOnboarding();
   const saveOnboardingReview = useSaveOnboardingReview();
-  const startClaim = useStartClaim();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [signupError, setSignupError] = useState("");
-  const [signupUrl, setSignupUrl] = useState("");
 
   useEffect(() => {
     if (!memberLoading && member?.onboardingCompleted) setLocation("/dashboard");
@@ -45,44 +41,9 @@ export default function UnlockConfirmPage() {
     });
   };
 
-  const openShopify = (existingTab?: Window | null) => {
-    setSignupError("");
-    setSignupUrl("");
-    const partnerTab = existingTab === undefined ? window.open("about:blank", "_blank") : existingTab;
-    if (partnerTab) partnerTab.opener = null;
-    let resourceSlug: string | undefined;
-    try { resourceSlug = sessionStorage.getItem("pendingResourceSlug") || undefined; } catch {}
-    startClaim.mutate({ data: { resourceSlug } }, {
-      onSuccess: (result) => {
-        if (partnerTab && !partnerTab.closed) {
-          try { partnerTab.location.replace(result.redirectUrl); }
-          catch {
-            partnerTab.close();
-            setSignupUrl(SHOPIFY_FALLBACK_URL);
-            setSignupError("We couldn't open the tracked Shopify link. Use the backup link below to continue.");
-          }
-        } else {
-          setSignupUrl(SHOPIFY_FALLBACK_URL);
-          setSignupError("Your browser blocked the new tab. Use the backup link below to continue.");
-        }
-      },
-      onError: () => {
-        if (partnerTab && !partnerTab.closed) partnerTab.close();
-        setSignupUrl(SHOPIFY_FALLBACK_URL);
-        setSignupError("We couldn't open the tracked Shopify link. Use the backup link below to continue.");
-      },
-    });
-  };
-
   const handleNotFinished = () => {
-    const partnerTab = window.open("about:blank", "_blank");
-    if (partnerTab) partnerTab.opener = null;
     saveOnboardingReview.mutate({ data: { shopifySelfReported: false } }, {
-      onSuccess: () => openShopify(partnerTab),
-      onError: () => {
-        if (partnerTab && !partnerTab.closed) partnerTab.close();
-        toast({ variant: "destructive", title: "We couldn't update your confirmation", description: "Please try again." });
-      },
+      onError: () => toast({ variant: "destructive", title: "We couldn't update your confirmation", description: "Please try again." }),
     });
   };
 
@@ -90,7 +51,7 @@ export default function UnlockConfirmPage() {
     return <div className="grid min-h-[100dvh] place-items-center bg-[#FBFCFA] text-[#52645d]"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
 
-  const isSaving = completeOnboarding.isPending || saveOnboardingReview.isPending;
+  const isSaving = completeOnboarding.isPending;
 
   return (
     <div className="shopify-onboarding min-h-[100dvh] overflow-hidden bg-[#FBFCFA] px-4 py-4 text-[#14251F] sm:px-6 sm:py-6">
@@ -122,14 +83,13 @@ export default function UnlockConfirmPage() {
                   {completeOnboarding.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
                   {completeOnboarding.isPending ? "Saving…" : "Yes, I signed up through Kamil’s link"}
                 </Button>
-                <Button variant="outline" className="h-[54px] w-full rounded-xl border-[#b9cfbd] bg-white text-base text-[#193C36] hover:bg-[#f4f8f4]" onClick={handleNotFinished} disabled={isSaving || startClaim.isPending}>
-                  {saveOnboardingReview.isPending || startClaim.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ExternalLink className="mr-2 h-5 w-5" />}
-                  {saveOnboardingReview.isPending ? "Updating…" : startClaim.isPending ? "Opening Shopify…" : "I haven’t finished signup yet"}
+                <Button asChild variant="outline" className="h-[54px] w-full rounded-xl border-[#b9cfbd] bg-white text-base text-[#193C36] hover:bg-[#f4f8f4]">
+                  <a href={SHOPIFY_AFFILIATE_URL} target="_blank" rel="sponsored noopener noreferrer" onClick={handleNotFinished}>
+                    <ExternalLink className="mr-2 h-5 w-5" />
+                    I haven’t finished signup yet
+                  </a>
                 </Button>
               </div>
-
-              {signupError && <Alert variant="destructive" className="mt-6"><AlertTitle>Couldn't open Shopify</AlertTitle><AlertDescription>{signupError}</AlertDescription></Alert>}
-              {signupUrl && <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-sm font-semibold text-[#193c36] underline underline-offset-4">Open the Shopify backup link</a>}
             </CardContent>
           </Card>
         </main>

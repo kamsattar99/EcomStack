@@ -1,4 +1,4 @@
-import { useGetMember, useListResources, useSetBookmark, useStartClaim } from "@workspace/api-client-react";
+import { useGetMember, useListResources, useSetBookmark } from "@workspace/api-client-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Bookmark, Clock, ArrowRight, FileText, Store, X, ExternalLink, Loader2, Search, MessageCircle, Blocks, ClipboardCheck, Check } from "lucide-react";
@@ -9,7 +9,7 @@ import { PageMeta } from "@/components/page-meta";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@clerk/react";
 
-const SHOPIFY_FALLBACK_URL = "https://shopify.pxf.io/the-ecom-king";
+const SHOPIFY_AFFILIATE_URL = "https://shopify.pxf.io/the-ecom-king";
 
 const resourceKinds = [
   { type: "Prompt", title: "Prompts", description: "Find a better starting point.", icon: MessageCircle },
@@ -23,10 +23,8 @@ export default function DashboardPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const setBookmark = useSetBookmark();
-  const startClaim = useStartClaim();
   const [showShopifyCard, setShowShopifyCard] = useState(true);
   const [search, setSearch] = useState("");
-  const [shopifyFallback, setShopifyFallback] = useState("");
   const { data: library, isLoading: libraryLoading } = useListResources({ sort: "newest" });
 
   useEffect(() => {
@@ -53,26 +51,6 @@ export default function DashboardPage() {
         toast({ title: currentlySaved ? "Removed from saved" : "Saved to your Vault" });
       },
       onError: () => toast({ variant: "destructive", title: "Couldn’t update this bookmark", description: "Please try again." }),
-    });
-  };
-
-  const handleShopifyStart = () => {
-    setShopifyFallback("");
-    const partnerTab = window.open("about:blank", "_blank");
-    if (partnerTab) partnerTab.opener = null;
-    startClaim.mutate({ data: {} }, {
-      onSuccess: ({ redirectUrl }) => {
-        if (partnerTab && !partnerTab.closed) {
-          try { partnerTab.location.replace(redirectUrl); }
-          catch { partnerTab.close(); setShopifyFallback(SHOPIFY_FALLBACK_URL); }
-        } else {
-          setShopifyFallback(SHOPIFY_FALLBACK_URL);
-        }
-      },
-      onError: () => {
-        if (partnerTab && !partnerTab.closed) partnerTab.close();
-        setShopifyFallback(SHOPIFY_FALLBACK_URL);
-      },
     });
   };
 
@@ -183,7 +161,7 @@ export default function DashboardPage() {
         </main>
 
         <aside className="space-y-5">
-          {showShopifyCard && <section className="relative overflow-hidden rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5 shadow-[0_10px_20px_rgba(25,60,54,.06)]"><button onClick={handleDismissShopifyCard} className="absolute right-3 top-3 rounded-full p-1 text-[#63766c] hover:bg-white/60 hover:text-[#193C36]" aria-label="Dismiss Shopify recommendation"><X className="h-4 w-4" /></button><Store className="h-6 w-6 text-[#2F765F]" /><h2 className="mt-4 font-serif text-2xl leading-tight text-[#193C36]">Starting a new Shopify store?</h2><p className="mt-3 text-sm leading-6 text-[#52675c]">Use Kamil’s link to get started and support EcomStack.</p><Button onClick={handleShopifyStart} disabled={startClaim.isPending} className="mt-5 h-auto w-full whitespace-normal bg-[#193C36] py-3 text-left leading-5 text-white hover:bg-[#2F765F]">{startClaim.isPending ? <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" /> : <ExternalLink className="mr-2 h-4 w-4 shrink-0" />}Start Shopify through my link ↗</Button><p className="mt-3 text-xs leading-5 text-[#65776e]">We may earn a commission if you sign up through this link.</p>{shopifyFallback && <a href={shopifyFallback} target="_blank" rel="noopener noreferrer" className="mt-3 block text-sm font-semibold text-[#193C36] underline underline-offset-4">Open the Shopify backup link</a>}</section>}
+          {showShopifyCard && <section className="relative overflow-hidden rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5 shadow-[0_10px_20px_rgba(25,60,54,.06)]"><button onClick={handleDismissShopifyCard} className="absolute right-3 top-3 rounded-full p-1 text-[#63766c] hover:bg-white/60 hover:text-[#193C36]" aria-label="Dismiss Shopify recommendation"><X className="h-4 w-4" /></button><Store className="h-6 w-6 text-[#2F765F]" /><h2 className="mt-4 font-serif text-2xl leading-tight text-[#193C36]">Starting a new Shopify store?</h2><p className="mt-3 text-sm leading-6 text-[#52675c]">Use Kamil’s link to get started and support EcomStack.</p><Button asChild className="mt-5 h-auto w-full whitespace-normal bg-[#193C36] py-3 text-left leading-5 text-white hover:bg-[#2F765F]"><a href={SHOPIFY_AFFILIATE_URL} target="_blank" rel="sponsored noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4 shrink-0" />Start Shopify through my link ↗</a></Button><p className="mt-3 text-xs leading-5 text-[#65776e]">We may earn a commission if you sign up through this link.</p></section>}
           <section className="rounded-2xl border border-[#dce7dd] bg-white p-5"><h2 className="font-serif text-xl text-[#193C36]">Keep moving</h2><div className="mt-3 space-y-1"><Link href="/library" className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-[#52675c] hover:bg-[#E8F1E6] hover:text-[#193C36]">Search the Vault <ArrowRight className="h-4 w-4" /></Link><Link href="/support" className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-[#52675c] hover:bg-[#E8F1E6] hover:text-[#193C36]">Get support <ArrowRight className="h-4 w-4" /></Link>{member.resumeSlug && <Link href={`/resources/${member.resumeSlug}`} className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-semibold text-[#193C36] hover:bg-[#E8F1E6]">Resume your last resource <ArrowRight className="h-4 w-4" /></Link>}</div></section>
         </aside>
       </div>

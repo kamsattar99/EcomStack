@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useStartClaim, useSaveOnboardingReview, useGetMember, getGetMemberQueryKey, useRecordOnboardingView, useUpdateMemberProfile } from "@workspace/api-client-react";
+import { useSaveOnboardingReview, useGetMember, getGetMemberQueryKey, useRecordOnboardingView, useUpdateMemberProfile } from "@workspace/api-client-react";
 import type { MemberProfileInput } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ExternalLink, Loader2, Check } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Link, useLocation } from "wouter";
 import { PageMeta } from "@/components/page-meta";
 import { useToast } from "@/hooks/use-toast";
@@ -13,20 +12,17 @@ import { useUser } from "@clerk/react";
 import { ShopifyTile } from "@/components/shopify-tile";
 import { AppLogo } from "@/components/app-logo";
 
-const SHOPIFY_FALLBACK_URL = "https://shopify.pxf.io/the-ecom-king";
+const SHOPIFY_AFFILIATE_URL = "https://shopify.pxf.io/the-ecom-king";
 type PendingProfile = Omit<MemberProfileInput, "email">;
 
 export default function UnlockPage() {
   const { isLoaded: clerkLoaded, user } = useUser();
   const { data: member, isLoading: memberLoading } = useGetMember({ query: { queryKey: getGetMemberQueryKey() } });
-  const startClaim = useStartClaim();
   const saveOnboardingReview = useSaveOnboardingReview();
   const recordOnboardingView = useRecordOnboardingView();
   const updateMemberProfile = useUpdateMemberProfile();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
-  const [signupError, setSignupError] = useState("");
-  const [signupUrl, setSignupUrl] = useState("");
   const [shopifySelfReported, setShopifySelfReported] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const pendingProfile = useRef<PendingProfile | null>(null);
@@ -111,39 +107,6 @@ export default function UnlockPage() {
     );
   }
 
-  const handleStart = () => {
-    setSignupError("");
-    setSignupUrl("");
-    const partnerTab = window.open("about:blank", "_blank");
-    if (partnerTab) partnerTab.opener = null;
-    let resourceSlug: string | undefined;
-    try { resourceSlug = sessionStorage.getItem('pendingResourceSlug') || undefined; }
-    catch { /* Storage restrictions must not prevent a tracked signup. */ }
-
-    startClaim.mutate({ data: { resourceSlug } }, {
-      onSuccess: (result) => {
-        if (partnerTab && !partnerTab.closed) {
-          try {
-            partnerTab.location.replace(result.redirectUrl);
-          }
-          catch {
-            partnerTab.close();
-            setSignupUrl(SHOPIFY_FALLBACK_URL);
-            setSignupError("We couldn't open the tracked Shopify link. Use the backup link below to continue.");
-          }
-        } else {
-          setSignupUrl(SHOPIFY_FALLBACK_URL);
-          setSignupError("Your browser blocked the new tab. Use the backup link below to continue.");
-        }
-      },
-      onError: () => {
-        if (partnerTab && !partnerTab.closed) partnerTab.close();
-        setSignupUrl(SHOPIFY_FALLBACK_URL);
-        setSignupError("We couldn't open the tracked Shopify link. Use the backup link below to continue.");
-      }
-    });
-  };
-
   const handleContinue = () => {
     if (!shopifySelfReported || saveOnboardingReview.isPending) return;
     saveOnboardingReview.mutate({ data: { shopifySelfReported, marketingOptIn } }, {
@@ -181,9 +144,11 @@ export default function UnlockPage() {
               <p className="mt-5 max-w-[560px] text-base leading-7 text-[#607069]">Create your Shopify store using Kamil’s link. Once you’ve signed up, return here and confirm below to continue to the Vault.</p>
 
               <div className="mt-7">
-                <Button size="lg" variant={shopifySelfReported ? "outline" : "default"} className={`h-[54px] w-full rounded-xl px-5 text-base transition ${shopifySelfReported ? "border-[#b9cfbd] bg-white text-[#193C36] shadow-none hover:bg-[#f4f8f4]" : "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]"}`} onClick={handleStart} disabled={startClaim.isPending}>
-                  <span>{startClaim.isPending ? "Opening Shopify…" : "Start Shopify with Kamil’s link"}</span>
-                  {startClaim.isPending ? <Loader2 className="ml-auto h-5 w-5 animate-spin" /> : <ExternalLink className="ml-auto h-5 w-5" />}
+                <Button asChild size="lg" variant={shopifySelfReported ? "outline" : "default"} className={`h-[54px] w-full rounded-xl px-5 text-base transition ${shopifySelfReported ? "border-[#b9cfbd] bg-white text-[#193C36] shadow-none hover:bg-[#f4f8f4]" : "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]"}`}>
+                  <a href={SHOPIFY_AFFILIATE_URL} target="_blank" rel="sponsored noopener noreferrer">
+                    <span>Start Shopify with Kamil’s link</span>
+                    <ExternalLink className="ml-auto h-5 w-5" />
+                  </a>
                 </Button>
                 <p className="mt-3 text-center text-sm text-[#607069]">Opens in a new tab. Return here after signing up.</p>
                 <p className="mt-2 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
@@ -207,8 +172,6 @@ export default function UnlockPage() {
             </Button>
             <p className="mt-2 min-h-5 text-center text-sm text-[#65756d]">{shopifySelfReported ? "\u00a0" : "Confirm you signed up through Kamil’s link to continue."}</p>
 
-            {signupError && <Alert variant="destructive" className="mt-6"><AlertTitle>Couldn't open Shopify</AlertTitle><AlertDescription>{signupError}</AlertDescription></Alert>}
-            {signupUrl && <a href={signupUrl} target="_blank" rel="noopener noreferrer" className="mt-4 block text-center text-sm font-semibold text-[#193c36] underline underline-offset-4">Open the Shopify backup link</a>}
             </CardContent>
           </Card>
         </main>

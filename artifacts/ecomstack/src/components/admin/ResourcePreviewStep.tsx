@@ -3,6 +3,7 @@ import { ResourceFormValues } from "@/pages/admin/editor/schema";
 import { Asset } from "@workspace/api-client-react";
 import { CheckCircle2, AlertCircle, Eye, File as FileIcon, Clock, Tag } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { LinkedResource, TutorialVideo } from "@/components/resource-external-media";
 
 interface Props {
   form: UseFormReturn<ResourceFormValues>;
@@ -75,6 +76,9 @@ export function ResourcePreviewStep({ form, assets, checks }: Props) {
                   </div>
                 </div>
               )}
+
+               {values.tutorialUrl && <TutorialVideo url={values.tutorialUrl} />}
+               {values.sourceUrl && <LinkedResource url={values.sourceUrl} resourceType={values.type} />}
 
               {fileAssets.length > 0 && (
                 <div>

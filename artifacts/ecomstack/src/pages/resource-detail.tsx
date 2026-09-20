@@ -3,13 +3,14 @@ import { useGetResource, useGetResourceContent, useSetBookmark, useRecordResourc
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, FileText, ChevronLeft, Bookmark, Check, Download, Copy, PlayCircle, MessageCircle, Blocks, ClipboardCheck, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { Lock, FileText, ChevronLeft, Bookmark, Check, Download, Copy, MessageCircle, Blocks, ClipboardCheck, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@clerk/react";
 import { PageMeta } from "@/components/page-meta";
+import { LinkedResource, TutorialVideo } from "@/components/resource-external-media";
 
 function ResourceIllustration({ type }: { type: string }) {
   const Icon = type === "Prompt" ? MessageCircle : type === "Skill" ? Blocks : ClipboardCheck;
@@ -132,7 +133,8 @@ export default function ResourceDetailPage() {
               {resource.useCase && <section className="rounded-2xl border border-[#dce7dd] bg-white p-6 sm:p-7"><h2 className="font-serif text-2xl text-[#193C36]">When to use this</h2><div className="prose mt-4 max-w-none text-[#52675c] prose-p:leading-7"><ReactMarkdown>{resource.useCase}</ReactMarkdown></div></section>}
               {content.instructions && <section className="rounded-2xl border border-[#dce7dd] bg-white p-6 sm:p-7"><h2 className="font-serif text-2xl text-[#193C36]">Instructions</h2><div className="prose mt-4 max-w-none text-[#52675c] prose-p:leading-7 prose-headings:font-serif prose-headings:text-[#193C36]"><ReactMarkdown>{content.instructions}</ReactMarkdown></div></section>}
               {hasAssets && <section><h2 className="font-serif text-2xl text-[#193C36]">{resource.type === "Cheat Sheet" ? "Reference files" : "Downloads"}</h2><div className="mt-4 space-y-3">{content.assets.map((asset) => { const isPdf = asset.contentType === "application/pdf"; return <div key={asset.id} className="overflow-hidden rounded-2xl border border-[#dce7dd] bg-white"><div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-center gap-3"><div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E8F1E6] text-[#2F765F]"><FileText className="h-5 w-5" /></div><div className="min-w-0"><p className="truncate font-semibold text-[#193C36]">{asset.name}</p><p className="mt-1 text-xs text-[#65776e]">{(asset.size / 1024 / 1024).toFixed(2)} MB · {asset.contentType}</p></div></div><Button asChild size="sm" variant="outline" className="shrink-0 border-[#cbdacb] text-[#193C36] hover:bg-[#E8F1E6]"><a href={`/api/assets/${asset.id}/download`} download><Download className="mr-2 h-4 w-4" />{isPdf ? "Download PDF" : "Download file"}</a></Button></div>{resource.type === "Cheat Sheet" && isPdf && <iframe src={`/api/assets/${asset.id}/download?inline=1`} className="aspect-[1/1.25] w-full border-t border-[#dce7dd]" title={asset.name} />}</div>; })}</div></section>}
-              {resource.tutorialUrl && <section><h2 className="font-serif text-2xl text-[#193C36]">Video tutorial</h2><a href={resource.tutorialUrl} target="_blank" rel="noopener noreferrer" className="group mt-4 flex aspect-video items-center justify-center rounded-2xl bg-[#193C36] text-white shadow-[0_10px_22px_rgba(25,60,54,.12)]"><PlayCircle className="h-14 w-14 opacity-85 transition-transform group-hover:scale-110" /><span className="sr-only">Open video tutorial</span></a></section>}
+              {resource.tutorialUrl && <TutorialVideo url={resource.tutorialUrl} />}
+              {resource.sourceUrl && <LinkedResource url={resource.sourceUrl} resourceType={resource.type} />}
             </>
           )}
         </main>

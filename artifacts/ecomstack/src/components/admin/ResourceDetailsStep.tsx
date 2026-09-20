@@ -204,6 +204,7 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
               <FormField control={form.control} name="tutorialUrl" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tutorial Video URL</FormLabel>
+                  <FormDescription className="text-xs">A YouTube link plays directly on the resource page.</FormDescription>
                   <FormControl>
                     <Input {...field} type="url" className="bg-white" placeholder="https://youtube.com/..." data-testid="input-tutorial-url" />
                   </FormControl>
@@ -213,7 +214,8 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
               
               <FormField control={form.control} name="sourceUrl" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Source URL</FormLabel>
+                  <FormLabel>Resource URL</FormLabel>
+                  <FormDescription className="text-xs">Link to the Miro board, Google Doc, cheat sheet, or other supporting resource.</FormDescription>
                   <FormControl>
                     <Input {...field} type="url" className="bg-white" placeholder="https://..." data-testid="input-source-url" />
                   </FormControl>

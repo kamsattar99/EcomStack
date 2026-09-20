@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useUser, useClerk } from "@clerk/react";
 import { useGetMember, getGetMemberQueryKey, useGetSite } from "@workspace/api-client-react";
-import { LogOut, LayoutDashboard, Settings, Library, Lock, User, LifeBuoy, Menu } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, Library, Lock, LifeBuoy, Menu, FilePlus2, Tags } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AppLogo } from "@/components/app-logo";
@@ -163,6 +163,24 @@ export function Navbar() {
                       <Link href="/admin" className="cursor-pointer flex items-center">
                         <Settings className="mr-2 h-4 w-4" />
                         <span>Admin Overview</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/resources/new" className="cursor-pointer flex items-center">
+                        <FilePlus2 className="mr-2 h-4 w-4" />
+                        <span>Add Vault resource</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/resources" className="cursor-pointer flex items-center">
+                        <Library className="mr-2 h-4 w-4" />
+                        <span>Manage Vault content</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/taxonomies" className="cursor-pointer flex items-center">
+                        <Tags className="mr-2 h-4 w-4" />
+                        <span>Categories &amp; tags</span>
                       </Link>
                     </DropdownMenuItem>
                   </>

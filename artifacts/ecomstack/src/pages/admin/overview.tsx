@@ -1,6 +1,8 @@
 import { useGetAdminOverview } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, MousePointerClick, CheckCircle, FileText, Download, HelpCircle, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import { Users, MousePointerClick, CheckCircle, FileText, Download, HelpCircle, Activity, FilePlus2, Tags } from "lucide-react";
 
 export default function AdminOverviewPage() {
   const { data: overview, isLoading } = useGetAdminOverview();
@@ -25,7 +27,20 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="text-3xl font-serif font-medium mb-8">Admin Overview</h1>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-serif font-medium">Admin Overview</h1>
+          <p className="mt-1 text-muted-foreground">Create and manage the prompts, skills, and cheat sheets in your Vault.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link href="/admin/taxonomies"><Tags className="mr-2 h-4 w-4" />Categories &amp; tags</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/resources/new"><FilePlus2 className="mr-2 h-4 w-4" />Add Vault resource</Link>
+          </Button>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         {stats.map((stat, i) => {

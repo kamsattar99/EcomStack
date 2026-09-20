@@ -25,34 +25,10 @@ import { AssetUploader, LocalUpload } from "@/components/admin/AssetUploader";
 import { ResourcePreviewStep } from "@/components/admin/ResourcePreviewStep";
 
 export function getResourceChecklist(values: ResourceFormValues, fileAssetsCount: number, uploadingCount: number) {
-  const checks = [
+  return [
     { label: "Title is set", pass: !!values.title.trim() },
     { label: "Slug is valid", pass: !!values.slug.trim() && /^[a-z0-9-]+$/.test(values.slug) },
-    { label: "Description is provided", pass: !!values.description.trim() },
-    { label: "Category is selected", pass: !!values.category },
-    { label: "Public preview is written", pass: !!values.preview.trim() },
   ];
-  
-  if (values.type === 'Prompt') {
-    checks.push({ label: "Protected content is written", pass: !!values.content.trim() });
-    checks.push({ label: "Instructions are written", pass: !!values.instructions.trim() });
-  } else if (values.type === 'Skill') {
-    checks.push({ 
-      label: "Content/instructions OR supporting file provided", 
-      pass: (!!values.content.trim() && !!values.instructions.trim()) || fileAssetsCount > 0 
-    });
-  } else if (values.type === 'Cheat Sheet') {
-    checks.push({ 
-      label: "Content OR supporting file provided", 
-      pass: !!values.content.trim() || fileAssetsCount > 0 
-    });
-  }
-  
-  if (uploadingCount > 0) {
-    checks.push({ label: "All uploads are complete", pass: false });
-  }
-
-  return checks;
 }
 
 function createSlug(title: string) {
@@ -246,7 +222,7 @@ export default function AdminResourceEditorPage() {
       toast({
         variant: "destructive",
         title: "Complete the publishing checklist",
-        description: "Add the required details and cheat sheet content or a supporting file before publishing.",
+        description: "Add a title and a valid URL slug before publishing.",
       });
       return;
     }

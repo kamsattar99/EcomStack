@@ -130,28 +130,9 @@ router.post("/admin/resources/import", sameOrigin, async (req, res): Promise<voi
     res.status(400).json({ error: message });
   }
 });
-async function publishFieldErrors(input: {
-  title: string; description: string; category: string; preview: string; type: string; content: string; instructions: string;
-}, resourceId?: string) {
+async function publishFieldErrors(input: { title: string }) {
   const fields: Record<string, string> = {};
   if (!input.title.trim()) fields.title = "A title is required before publishing.";
-  if (!input.description.trim()) fields.description = "A short description is required before publishing.";
-  if (!input.category.trim()) fields.category = "Choose a category before publishing.";
-  if (!input.preview.trim()) fields.preview = "Add a member-facing preview before publishing.";
-  const hasContent = Boolean(input.content.trim());
-  const hasInstructions = Boolean(input.instructions.trim());
-  const confirmedFiles = resourceId
-    ? (await db.select({ id: assetsTable.id }).from(assetsTable).where(and(eq(assetsTable.resourceId, resourceId), eq(assetsTable.status, "confirmed")))).length > 0
-    : false;
-  if (input.type === "Prompt" && (!hasContent || !hasInstructions)) {
-    if (!hasContent) fields.content = "Prompt content is required before publishing.";
-    if (!hasInstructions) fields.instructions = "Prompt instructions are required before publishing.";
-  } else if (input.type === "Skill" && (!hasContent && !hasInstructions && !confirmedFiles)) {
-    fields.content = "Add protected content and instructions, or confirm at least one supporting file.";
-    fields.instructions = "Add protected content and instructions, or confirm at least one supporting file.";
-  } else if (input.type === "Cheat Sheet" && (!hasContent && !confirmedFiles)) {
-    fields.content = "Add reference content or confirm at least one supporting file.";
-  }
   return fields;
 }
 
@@ -162,7 +143,7 @@ async function saveResource(req: Parameters<typeof router.post>[1] extends never
   const [existing] = id ? await db.select().from(resourcesTable).where(eq(resourcesTable.id, id)) : [];
   if (id && !existing) { res.status(404).json({ error: "Resource not found", code: "RESOURCE_NOT_FOUND" }); return; }
   if (input.status === "published" && (!existing || existing.status !== "published")) {
-    const fields = await publishFieldErrors({ ...input, content: input.content ?? "", instructions: input.instructions ?? "" }, id);
+    const fields = await publishFieldErrors({ title: input.title });
     if (Object.keys(fields).length) {
       res.status(400).json({ error: "Resource is not ready to publish", code: "PUBLISH_VALIDATION_FAILED", fields });
       return;

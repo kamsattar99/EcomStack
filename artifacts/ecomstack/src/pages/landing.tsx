@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useGetSite } from "@workspace/api-client-react";
-import { ArrowRight, Check, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowRight, Check, MessageCircle, Sparkles, Youtube } from "lucide-react";
 import { PageMeta } from "@/components/page-meta";
 
 type ResourceKind = "prompts" | "skills" | "cheats";
@@ -60,33 +60,52 @@ export default function LandingPage() {
         title="EcomStack | Resources for your next big idea"
         description={site?.tagline || "Practical prompts, skills and cheat sheets for ecommerce and digital product creators."}
       />
-      <section className="landing-hero relative isolate px-4 pb-20 pt-18 sm:pt-22 md:pb-28">
+      <section className="landing-hero relative isolate px-4 pb-16 pt-10 sm:pt-14 md:pb-20">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 landing-grid" />
         <div aria-hidden="true" className="pointer-events-none absolute -left-36 top-16 -z-10 h-80 w-80 rounded-full bg-[#E8F1E6]/80 blur-3xl" />
         <div aria-hidden="true" className="pointer-events-none absolute -right-28 top-6 -z-10 h-96 w-96 rounded-full bg-[#dceee5]/70 blur-3xl" />
 
-        <DimensionalIcon kind="prompts" className="landing-float-one pointer-events-none absolute left-[5%] top-28 hidden lg:block" />
-        <DimensionalIcon kind="skills" className="landing-float-two pointer-events-none absolute right-[5%] top-24 hidden lg:block" />
-        <DimensionalIcon kind="cheats" className="landing-float-three pointer-events-none absolute bottom-0 left-[13%] hidden xl:block" />
+        <div className="relative mx-auto max-w-[1240px]">
+          <DimensionalIcon kind="prompts" className="landing-float-one pointer-events-none !absolute left-0 top-[19%] hidden scale-90 lg:block xl:scale-100" />
+          <DimensionalIcon kind="cheats" className="landing-float-two pointer-events-none !absolute bottom-[5%] left-[9%] hidden scale-75 lg:block xl:scale-90" />
+          <DimensionalIcon kind="skills" className="landing-float-three pointer-events-none !absolute right-0 top-[15%] hidden scale-90 lg:block xl:scale-100" />
+          <DimensionalIcon kind="prompts" className="landing-float-four pointer-events-none !absolute bottom-[8%] right-[9%] hidden scale-75 lg:block xl:scale-90" />
 
-        <div className="mx-auto max-w-4xl text-center lg:-mt-64">
-          <p className="landing-enter landing-enter-1 inline-flex rounded-full border border-[#cdddcf] bg-white/80 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-[#2F765F] shadow-sm">
-            FOR ECOMMERCE &amp; DIGITAL PRODUCT CREATORS
-          </p>
-          <h1 className="landing-enter landing-enter-2 mx-auto mt-7 max-w-4xl text-balance font-serif text-5xl font-medium leading-[0.98] tracking-[-0.05em] text-[#14251F] sm:text-6xl md:text-7xl lg:text-8xl">
-            <span className="text-[#2F765F]">Prompts, skills</span> &amp; cheat sheets.<br />
-            Built for your next big idea.
-          </h1>
-          <p className="landing-enter landing-enter-3 mx-auto mt-7 max-w-2xl text-base leading-7 text-[#5f7169] sm:text-lg">
-            Practical resources to research products, create content, improve your store and launch digital offers—all in one place.
-          </p>
-          <div className="landing-enter landing-enter-4 mt-9 flex flex-col items-center">
-            <Button asChild size="lg" className="landing-cta h-14 rounded-full bg-[#193C36] px-8 text-base text-white shadow-[0_12px_24px_rgba(25,60,54,0.18)] hover:bg-[#2F765F] sm:px-10">
-              <Link href="/sign-up">
-                Create free account <ArrowRight className="landing-arrow ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <p className="mt-4 text-sm text-[#6b7d74]">Your next useful resource starts here.</p>
+          <div className="mx-auto max-w-[800px] text-center">
+            <div className="landing-enter landing-enter-1 flex flex-wrap items-center justify-center gap-2 text-sm text-[#456056]">
+              <span className="mr-1 text-xs font-bold uppercase tracking-[0.15em] text-[#6b7d74]">Built by</span>
+              <a href="https://www.youtube.com/@THEECOMKING" target="_blank" rel="noopener noreferrer" aria-label="Visit The Ecom King on YouTube" className="creator-profile">
+                <img src="https://yt3.googleusercontent.com/rNSQYz_JJUsDMsa_MW2fXUYyVVJP27aOPiQqyn3prdHDCtwyUdxR2EeyPUQ3GLR58hQFY1stbA=s160-c-k-c0x00ffffff-no-rj" alt="The Ecom King YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
+                <span>The Ecom King</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
+              </a>
+              <span aria-hidden="true" className="font-serif text-base text-[#789087]">&amp;</span>
+              <a href="https://www.youtube.com/channel/UCekIx7k0LtWGyovlIgC_2Kg" target="_blank" rel="noopener noreferrer" aria-label="Visit Kamil Sattar Make Money With AI on YouTube" className="creator-profile">
+                <img src="https://yt3.googleusercontent.com/kiqUOuI8Z2s4Fu_OUfGJKGwKTuzbA7b2moQHDVqSErfMgQ5MvsekZ3B33yZOZDSZWjdusi60iII=s160-c-k-c0x00ffffff-no-rj" alt="Kamil Sattar Make Money With AI YouTube channel avatar" className="h-9 w-9 rounded-full object-cover" />
+                <span>Kamil Sattar | Make Money With AI</span><Youtube aria-hidden="true" className="h-3.5 w-3.5 text-[#2F765F]" />
+              </a>
+            </div>
+            <p className="landing-enter landing-enter-2 mt-5 inline-flex rounded-full border border-[#cdddcf] bg-white/80 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-[#2F765F] shadow-sm">
+              FOR ECOMMERCE &amp; DIGITAL PRODUCT CREATORS
+            </p>
+            <h1 className="landing-enter landing-enter-3 mx-auto mt-5 max-w-[780px] text-balance font-serif text-[2.5rem] font-medium leading-[0.98] tracking-[-0.05em] text-[#14251F] sm:text-[3.25rem] md:text-[3.75rem] lg:text-[4.5rem] xl:text-[5rem]">
+              <span className="text-[#2F765F]">Prompts, skills</span> &amp; cheat sheets.<br />
+              Built for your next big idea.
+            </h1>
+            <p className="landing-enter landing-enter-4 mx-auto mt-5 max-w-2xl text-base leading-7 text-[#5f7169] sm:text-lg">
+              Practical resources to research products, create content, improve your store and launch digital offers—all in one place.
+            </p>
+            <div className="landing-enter landing-enter-5 mt-7 flex flex-col items-center">
+              <Button asChild size="lg" className="landing-cta h-14 rounded-full bg-[#193C36] px-8 text-base text-white shadow-[0_12px_24px_rgba(25,60,54,0.18)] hover:bg-[#2F765F] sm:px-10">
+                <Link href="/sign-up">
+                  Create free account <ArrowRight className="landing-arrow ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <p className="mt-4 text-sm text-[#6b7d74]">Your next useful resource starts here.</p>
+            </div>
+            <div aria-hidden="true" className="mt-4 flex items-center justify-between px-1 lg:hidden">
+              <DimensionalIcon kind="cheats" className="landing-float-two origin-left scale-[.58]" />
+              <DimensionalIcon kind="prompts" className="landing-float-four origin-right scale-[.58]" />
+            </div>
           </div>
         </div>
       </section>
@@ -121,15 +140,17 @@ export default function LandingPage() {
       <style>{`
         .landing-grid { background-image: linear-gradient(rgba(47, 118, 95, .055) 1px, transparent 1px), linear-gradient(90deg, rgba(47, 118, 95, .055) 1px, transparent 1px); background-size: 34px 34px; mask-image: linear-gradient(to bottom, black, transparent 92%); }
         .landing-enter { animation: landing-rise .65s cubic-bezier(.22, .8, .26, 1) both; }
-        .landing-enter-2 { animation-delay: .09s; } .landing-enter-3 { animation-delay: .18s; } .landing-enter-4 { animation-delay: .27s; }
-        .landing-float-one { animation: landing-float 6s ease-in-out infinite; } .landing-float-two { animation: landing-float 7.5s ease-in-out -.8s infinite; } .landing-float-three { animation: landing-float 6.8s ease-in-out -2s infinite; }
+        .landing-enter-2 { animation-delay: .07s; } .landing-enter-3 { animation-delay: .14s; } .landing-enter-4 { animation-delay: .21s; } .landing-enter-5 { animation-delay: .28s; }
+        .creator-profile { display:inline-flex; max-width:100%; align-items:center; gap:.45rem; border:1px solid #d9e5da; border-radius:999px; background:rgba(255,255,255,.74); padding:.25rem .6rem .25rem .28rem; font-size:.75rem; font-weight:600; line-height:1.2; color:#193C36; transition:border-color .2s ease, background .2s ease; }
+        .creator-profile:hover { border-color:#8eb4a0; background:#fff; } .creator-profile:focus-visible { outline:3px solid #2F765F; outline-offset:3px; }
+        .landing-float-one { animation: landing-float 6s ease-in-out infinite; } .landing-float-two { animation: landing-float 7.5s ease-in-out -.8s infinite; } .landing-float-three { animation: landing-float 6.8s ease-in-out -2s infinite; } .landing-float-four { animation: landing-float 7.1s ease-in-out -1.6s infinite; }
         .landing-card { animation: landing-rise .65s cubic-bezier(.22, .8, .26, 1) both; transition: transform .3s ease, box-shadow .3s ease; }
         .landing-card-1 { animation-delay: .12s; } .landing-card-2 { animation-delay: .2s; } .landing-card-3 { animation-delay: .28s; }
         .landing-card:hover { transform: translateY(-6px); box-shadow: 0 20px 36px rgba(25,60,54,.12); }
         .landing-cta:focus-visible { outline: 3px solid #2F765F; outline-offset: 4px; } .landing-cta:hover .landing-arrow { transform: translateX(4px); } .landing-arrow { transition: transform .2s ease; }
         @keyframes landing-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes landing-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-        @media (prefers-reduced-motion: reduce) { .landing-enter, .landing-card, .landing-float-one, .landing-float-two, .landing-float-three { animation: none !important; } .landing-card, .landing-cta, .landing-arrow { transition: none !important; } }
+        @keyframes landing-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @media (prefers-reduced-motion: reduce) { .landing-enter, .landing-card, .landing-float-one, .landing-float-two, .landing-float-three, .landing-float-four { animation: none !important; } .landing-card, .landing-cta, .landing-arrow, .creator-profile { transition: none !important; } }
       `}</style>
     </div>
   );

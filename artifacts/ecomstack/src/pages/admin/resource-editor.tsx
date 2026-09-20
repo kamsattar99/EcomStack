@@ -9,7 +9,7 @@ import {
   useImportResourceFromUrl
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resourceSchema, ResourceFormValues } from "./editor/schema";
 import { Form } from "@/components/ui/form";
@@ -91,6 +91,7 @@ export default function AdminResourceEditorPage() {
 
   const initializedForId = useRef<string | null>(null);
   const lastSaved = useRef<string>("");
+  const autoSaveInFlight = useRef(false);
 
   useEffect(() => {
     if (!isNew && adminResource && initializedForId.current !== id) {
@@ -111,7 +112,7 @@ export default function AdminResourceEditorPage() {
     }
   }, [adminResource, id, isNew, form]);
 
-  const formValues = form.watch();
+  const formValues = useWatch({ control: form.control }) as ResourceFormValues;
 
   // Auto-save logic
   useEffect(() => {
@@ -121,24 +122,33 @@ export default function AdminResourceEditorPage() {
     const currentSerialized = JSON.stringify(formValues);
     if (currentSerialized !== lastSaved.current) {
       setSaveStatus('unsaved');
-      handler = setTimeout(() => {
+      handler = setTimeout(async () => {
+        if (autoSaveInFlight.current) return;
+        const snapshot = form.getValues();
+        const serializedSnapshot = JSON.stringify(snapshot);
+
+        if (serializedSnapshot === lastSaved.current) return;
+
+        autoSaveInFlight.current = true;
         setSaveStatus('saving');
-        updateResource.mutate({ id: id!, data: formValues }, {
-          onSuccess: (res) => {
-            setSaveStatus('saved');
-            lastSaved.current = currentSerialized;
-            queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
-              old ? { ...old, resource: res, content: formValues.content } : old
-            );
-          },
-          onError: () => setSaveStatus('failed')
-        });
+        try {
+          const res = await updateResource.mutateAsync({ id: id!, data: snapshot });
+          lastSaved.current = serializedSnapshot;
+          queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) =>
+            old ? { ...old, resource: res, content: snapshot.content } : old
+          );
+          setSaveStatus(JSON.stringify(form.getValues()) === serializedSnapshot ? 'saved' : 'unsaved');
+        } catch {
+          setSaveStatus('failed');
+        } finally {
+          autoSaveInFlight.current = false;
+        }
       }, 1500);
     }
     return () => {
       if (handler) clearTimeout(handler);
     };
-  }, [formValues, isNew, id, updateResource, queryClient]);
+  }, [formValues, isNew, id, updateResource, queryClient, form]);
 
   const [importDraft, setImportDraft] = useState<any>(null);
 
@@ -215,25 +225,33 @@ export default function AdminResourceEditorPage() {
     if (!created) return;
 
     const data = form.getValues();
+    const fileAssetsCount = adminResource?.assets?.filter((asset) => asset.kind === 'file').length || 0;
+    const uploadingCount = uploads.filter((upload) => upload.status === 'uploading' || upload.status === 'validating' || upload.status === 'failed').length;
+    if (!getResourceChecklist(data, fileAssetsCount, uploadingCount).every((check) => check.pass)) {
+      setSaveStatus('unsaved');
+      toast({
+        variant: "destructive",
+        title: "Complete the publishing checklist",
+        description: "Add the required details and cheat sheet content or a supporting file before publishing.",
+      });
+      return;
+    }
     const isPublishing = data.status !== 'published';
     
-    // Need explicit manual save trigger for Publish click
     setSaveStatus('saving');
-    updateResource.mutate({ id: id!, data: { ...data, status: 'published' } }, {
-      onSuccess: (res) => {
-        form.setValue('status', 'published');
-        lastSaved.current = JSON.stringify(form.getValues());
-        setSaveStatus('saved');
-        toast({ title: isPublishing ? "Resource Published" : "Changes published" });
-        queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
-          old ? { ...old, resource: res, content: data.content } : old
-        );
-      },
-      onError: () => {
-        setSaveStatus('failed');
-        toast({ variant: "destructive", title: "Failed to publish" });
-      }
-    });
+    try {
+      const res = await updateResource.mutateAsync({ id: id!, data: { ...data, status: 'published' } });
+      form.setValue('status', 'published');
+      lastSaved.current = JSON.stringify({ ...data, status: 'published' });
+      setSaveStatus('saved');
+      toast({ title: isPublishing ? "Resource Published" : "Changes published" });
+      queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) =>
+        old ? { ...old, resource: res, content: data.content } : old
+      );
+    } catch {
+      setSaveStatus('failed');
+      toast({ variant: "destructive", title: "Failed to publish", description: "Your draft is still saved. Please try again." });
+    }
   };
 
   if (!isNew && isLoadingResource) return (
@@ -311,16 +329,16 @@ export default function AdminResourceEditorPage() {
             </Button>
           ) : (
             <>
-              <Button type="button" variant="outline" onClick={handleSaveDraft} disabled={saveStatus === 'saving' || (formValues.status === 'draft' && saveStatus !== 'unsaved')} data-testid="button-save-draft">
+              <Button type="button" variant="outline" onClick={handleSaveDraft} disabled={updateResource.isPending || (formValues.status === 'draft' && saveStatus !== 'unsaved')} data-testid="button-save-draft">
                 Save Draft
               </Button>
               <Button 
                 type="button" 
                 onClick={handlePublish}
-                disabled={!readyToPublish || saveStatus === 'saving' || (formValues.status === 'published' && saveStatus !== 'unsaved')}
+                disabled={!readyToPublish || updateResource.isPending || (formValues.status === 'published' && saveStatus !== 'unsaved')}
                 data-testid="button-publish"
               >
-                {saveStatus === 'saving' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {updateResource.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 {formValues.status === 'published' ? (saveStatus === 'unsaved' ? "Update Published" : "Published") : "Publish Resource"}
               </Button>
             </>

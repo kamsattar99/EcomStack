@@ -27,6 +27,7 @@ import AdminImpactPage from '@/pages/admin/impact';
 import AdminTaxonomiesPage from '@/pages/admin/taxonomies';
 import { useGetMember, getGetMemberQueryKey } from "@workspace/api-client-react";
 import { Navbar } from "@/components/navbar";
+import { ShopifyOfferBanner } from "@/components/shopify-offer-banner";
 import SignUpDetailsPage from "@/pages/sign-up";
 import SignUpAuthPage from "@/pages/sign-up-auth";
 import SignInPage from "@/pages/sign-in";
@@ -202,9 +203,13 @@ function AppRoutes() {
 function Router() {
   const [location] = useLocation();
   const routes = <AppRoutes />;
-  return location.startsWith("/sign-in") || location.startsWith("/sign-up") || location.startsWith("/unlock")
-    ? routes
-    : <Layout>{routes}</Layout>;
+  const usesStandaloneLayout = location.startsWith("/sign-in") || location.startsWith("/sign-up") || location.startsWith("/unlock");
+  return (
+    <>
+      <ShopifyOfferBanner />
+      {usesStandaloneLayout ? routes : <Layout>{routes}</Layout>}
+    </>
+  );
 }
 function RoutedErrorBoundary({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();

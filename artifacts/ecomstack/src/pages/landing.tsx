@@ -1,87 +1,136 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useGetSite } from "@workspace/api-client-react";
-import { ArrowRight, BookOpen, Search, Zap } from "lucide-react";
+import { ArrowRight, Check, MessageCircle, Sparkles } from "lucide-react";
 import { PageMeta } from "@/components/page-meta";
+
+type ResourceKind = "prompts" | "skills" | "cheats";
+
+function DimensionalIcon({ kind, className = "" }: { kind: ResourceKind; className?: string }) {
+  if (kind === "prompts") {
+    return (
+      <div aria-hidden="true" className={`relative h-32 w-32 ${className}`}>
+        <div className="absolute left-7 top-5 h-20 w-20 rounded-[26px] border border-white/80 bg-[#E8F1E6] shadow-[inset_0_2px_3px_rgba(255,255,255,0.8),0_18px_24px_rgba(25,60,54,0.17)] [transform:rotate(-8deg)_rotateY(-12deg)]" />
+        <div className="absolute left-9 top-7 grid h-20 w-20 place-items-center rounded-[24px] bg-[#193C36] shadow-[inset_0_2px_3px_rgba(255,255,255,0.18),0_12px_18px_rgba(25,60,54,0.22)] [transform:rotate(5deg)_rotateY(16deg)]">
+          <MessageCircle className="h-8 w-8 text-[#E8F1E6]" strokeWidth={1.6} />
+        </div>
+        <div className="absolute right-2 top-1 grid h-9 w-9 place-items-center rounded-xl bg-white shadow-[0_8px_16px_rgba(25,60,54,0.14)]">
+          <Sparkles className="h-4 w-4 text-[#2F765F]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === "skills") {
+    return (
+      <div aria-hidden="true" className={`relative h-32 w-32 ${className}`}>
+        <div className="absolute left-3 top-10 h-14 w-14 rounded-2xl border border-white/90 bg-[#2F765F] shadow-[inset_0_3px_5px_rgba(255,255,255,0.3),0_16px_22px_rgba(25,60,54,0.18)] [transform:rotate(-12deg)_rotateY(22deg)]" />
+        <div className="absolute right-4 top-4 h-16 w-16 rounded-[22px] border border-white/90 bg-[#E8F1E6] shadow-[inset_0_3px_5px_rgba(255,255,255,0.85),0_16px_22px_rgba(25,60,54,0.13)] [transform:rotate(10deg)_rotateY(-18deg)]" />
+        <div className="absolute bottom-4 left-11 h-14 w-14 rounded-2xl bg-[#193C36] shadow-[inset_0_3px_5px_rgba(255,255,255,0.18),0_15px_20px_rgba(25,60,54,0.22)] [transform:rotate(3deg)_rotateY(14deg)]" />
+        <div className="absolute bottom-9 left-[3.55rem] h-5 w-5 rounded-md border border-white/50 bg-[#E8F1E6]" />
+      </div>
+    );
+  }
+
+  return (
+    <div aria-hidden="true" className={`relative h-32 w-32 ${className}`}>
+      <div className="absolute left-5 top-8 h-[72px] w-[76px] rounded-2xl border border-white bg-[#2F765F]/40 shadow-[0_14px_20px_rgba(25,60,54,0.12)] [transform:rotate(-12deg)]" />
+      <div className="absolute left-8 top-5 h-[74px] w-[76px] rounded-2xl border border-white bg-[#E8F1E6] shadow-[0_16px_22px_rgba(25,60,54,0.16)] [transform:rotate(5deg)]" />
+      <div className="absolute left-10 top-7 h-[74px] w-[76px] rounded-2xl border border-white/90 bg-white px-4 py-4 shadow-[inset_0_2px_3px_rgba(255,255,255,0.9),0_18px_22px_rgba(25,60,54,0.14)] [transform:rotate(11deg)_rotateY(-10deg)]">
+        <span className="mb-2 block h-1.5 w-8 rounded-full bg-[#193C36]/80" />
+        <span className="mb-2 block h-1.5 w-11 rounded-full bg-[#2F765F]/45" />
+        <span className="flex items-center gap-1 text-[#2F765F]"><Check className="h-3 w-3" /><i className="block h-1.5 w-6 rounded-full bg-[#2F765F]/45" /></span>
+      </div>
+    </div>
+  );
+}
+
+const resources: Array<{ kind: ResourceKind; title: string; description: string }> = [
+  { kind: "prompts", title: "Prompts", description: "Clear starting points for product research, ad ideas, content and digital offers." },
+  { kind: "skills", title: "Skills", description: "Practical workflows for turning ideas into repeatable work." },
+  { kind: "cheats", title: "Cheat sheets", description: "Quick references, checklists and frameworks to keep beside you." },
+];
 
 export default function LandingPage() {
   const { data: site } = useGetSite();
 
   return (
-    <div className="flex flex-col flex-1 w-full">
+    <div className="landing-page flex w-full flex-1 flex-col overflow-hidden bg-[#FBFCFA] text-[#14251F]">
       <PageMeta 
-        title="Home" 
-        description={site?.tagline || "Practical AI prompts, skills and cheat sheets for researching products, creating ads and building your store."}
+        title="EcomStack | Resources for your next big idea"
+        description={site?.tagline || "Practical prompts, skills and cheat sheets for ecommerce and digital product creators."}
       />
-      {/* Hero Section */}
-      <section className="relative px-4 pt-32 pb-24 md:pt-48 md:pb-32 overflow-hidden flex-1 flex flex-col justify-center animate-in fade-in duration-1000 slide-in-from-bottom-8">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-background to-background"></div>
-        <div className="container mx-auto max-w-4xl text-center space-y-10">
-          
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium tracking-tight text-foreground text-balance mx-auto">
-            Your next ecommerce<br className="hidden md:inline" /> move starts here.
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Practical AI prompts, skills and cheat sheets for researching products, creating ads and building your store.
+      <section className="landing-hero relative isolate px-4 pb-20 pt-18 sm:pt-22 md:pb-28">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 landing-grid" />
+        <div aria-hidden="true" className="pointer-events-none absolute -left-36 top-16 -z-10 h-80 w-80 rounded-full bg-[#E8F1E6]/80 blur-3xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -right-28 top-6 -z-10 h-96 w-96 rounded-full bg-[#dceee5]/70 blur-3xl" />
+
+        <DimensionalIcon kind="prompts" className="landing-float-one pointer-events-none absolute left-[5%] top-28 hidden lg:block" />
+        <DimensionalIcon kind="skills" className="landing-float-two pointer-events-none absolute right-[5%] top-24 hidden lg:block" />
+        <DimensionalIcon kind="cheats" className="landing-float-three pointer-events-none absolute bottom-0 left-[13%] hidden xl:block" />
+
+        <div className="mx-auto max-w-4xl text-center lg:-mt-64">
+          <p className="landing-enter landing-enter-1 inline-flex rounded-full border border-[#cdddcf] bg-white/80 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-[#2F765F] shadow-sm">
+            FOR ECOMMERCE &amp; DIGITAL PRODUCT CREATORS
           </p>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <Button asChild size="lg" className="h-14 px-10 text-lg rounded-full w-full sm:w-auto shadow-sm">
+          <h1 className="landing-enter landing-enter-2 mx-auto mt-7 max-w-4xl text-balance font-serif text-5xl font-medium leading-[0.98] tracking-[-0.05em] text-[#14251F] sm:text-6xl md:text-7xl lg:text-8xl">
+            <span className="text-[#2F765F]">Prompts, skills</span> &amp; cheat sheets.<br />
+            Built for your next big idea.
+          </h1>
+          <p className="landing-enter landing-enter-3 mx-auto mt-7 max-w-2xl text-base leading-7 text-[#5f7169] sm:text-lg">
+            Practical resources to research products, create content, improve your store and launch digital offers—all in one place.
+          </p>
+          <div className="landing-enter landing-enter-4 mt-9 flex flex-col items-center">
+            <Button asChild size="lg" className="landing-cta h-14 rounded-full bg-[#193C36] px-8 text-base text-white shadow-[0_12px_24px_rgba(25,60,54,0.18)] hover:bg-[#2F765F] sm:px-10">
               <Link href="/sign-up">
-                Create your free account <ArrowRight className="ml-2 h-5 w-5" />
+                Create free account <ArrowRight className="landing-arrow ml-2 h-5 w-5" />
               </Link>
             </Button>
+            <p className="mt-4 text-sm text-[#6b7d74]">Your next useful resource starts here.</p>
           </div>
         </div>
       </section>
 
-      {/* Compact Explanation Section */}
-      <section className="py-24 bg-card border-t border-border/60 mt-auto">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <div className="grid md:grid-cols-3 gap-8 text-center animate-in fade-in duration-1000 delay-300 slide-in-from-bottom-8 fill-mode-both">
-            <div className="space-y-3 p-6 rounded-2xl bg-secondary/30 border border-border/50 transition-all hover:bg-secondary/60 hover:-translate-y-1">
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                <Search className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-serif font-medium text-foreground">Curated Prompts</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Tested and refined prompts designed specifically for operators to accelerate workflows.
-              </p>
-            </div>
-            
-            <div className="space-y-3 p-6 rounded-2xl bg-secondary/30 border border-border/50 transition-all hover:bg-secondary/60 hover:-translate-y-1">
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                <Zap className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-serif font-medium text-foreground">Actionable Skills</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Step-by-step playbooks for researching competitors, structuring campaigns, and optimizing.
-              </p>
-            </div>
-            
-            <div className="space-y-3 p-6 rounded-2xl bg-secondary/30 border border-border/50 transition-all hover:bg-secondary/60 hover:-translate-y-1">
-              <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-serif font-medium text-foreground">Cheat Sheets</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Downloadable references and frameworks you can share with your team.
-              </p>
-            </div>
+      <section id="whats-inside" className="border-y border-[#e1e9e1] bg-white/70 px-4 py-18 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-xl">
+            <p className="text-xs font-bold tracking-[0.18em] text-[#2F765F]">WHAT&apos;S INSIDE</p>
+            <h2 className="mt-4 font-serif text-4xl leading-[1.04] tracking-[-0.04em] text-[#14251F] sm:text-5xl">Find the right resource. Get to work.</h2>
+          </div>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {resources.map((resource, index) => (
+              <article key={resource.kind} className={`landing-card landing-card-${index + 1} group relative overflow-hidden rounded-3xl border border-[#dce7dd] bg-[#FBFCFA] p-7 shadow-[0_12px_28px_rgba(25,60,54,0.06)]`}>
+                <DimensionalIcon kind={resource.kind} className="transition-transform duration-500 group-hover:[transform:rotateX(5deg)_rotateY(-7deg)_translateY(-5px)]" />
+                <h3 className="mt-4 font-serif text-2xl font-medium tracking-[-0.03em] text-[#193C36]">{resource.title}</h3>
+                <p className="mt-3 max-w-xs text-sm leading-6 text-[#62736b]">{resource.description}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
-      
-      {/* Footer */}
-      <footer className="bg-card py-8 border-t border-border/50">
-        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>&copy; {new Date().getFullYear()} {site?.brandName || 'EcomStack'}. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/support" className="hover:text-foreground transition-colors">Support</Link>
+
+      <footer className="bg-[#FBFCFA] px-4 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-sm text-[#718078] sm:flex-row">
+          <p>© {new Date().getFullYear()} {site?.brandName || "EcomStack"}. All rights reserved.</p>
+          <div className="flex gap-5">
+            <Link href="/support" className="transition-colors hover:text-[#193C36]">Support</Link>
+            <Link href="/sign-in" className="transition-colors hover:text-[#193C36]">Sign in</Link>
           </div>
         </div>
       </footer>
+      <style>{`
+        .landing-grid { background-image: linear-gradient(rgba(47, 118, 95, .055) 1px, transparent 1px), linear-gradient(90deg, rgba(47, 118, 95, .055) 1px, transparent 1px); background-size: 34px 34px; mask-image: linear-gradient(to bottom, black, transparent 92%); }
+        .landing-enter { animation: landing-rise .65s cubic-bezier(.22, .8, .26, 1) both; }
+        .landing-enter-2 { animation-delay: .09s; } .landing-enter-3 { animation-delay: .18s; } .landing-enter-4 { animation-delay: .27s; }
+        .landing-float-one { animation: landing-float 6s ease-in-out infinite; } .landing-float-two { animation: landing-float 7.5s ease-in-out -.8s infinite; } .landing-float-three { animation: landing-float 6.8s ease-in-out -2s infinite; }
+        .landing-card { animation: landing-rise .65s cubic-bezier(.22, .8, .26, 1) both; transition: transform .3s ease, box-shadow .3s ease; }
+        .landing-card-1 { animation-delay: .12s; } .landing-card-2 { animation-delay: .2s; } .landing-card-3 { animation-delay: .28s; }
+        .landing-card:hover { transform: translateY(-6px); box-shadow: 0 20px 36px rgba(25,60,54,.12); }
+        .landing-cta:focus-visible { outline: 3px solid #2F765F; outline-offset: 4px; } .landing-cta:hover .landing-arrow { transform: translateX(4px); } .landing-arrow { transition: transform .2s ease; }
+        @keyframes landing-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes landing-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+        @media (prefers-reduced-motion: reduce) { .landing-enter, .landing-card, .landing-float-one, .landing-float-two, .landing-float-three { animation: none !important; } .landing-card, .landing-cta, .landing-arrow { transition: none !important; } }
+      `}</style>
     </div>
   );
 }

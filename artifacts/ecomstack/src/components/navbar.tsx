@@ -18,6 +18,40 @@ export function Navbar() {
   const { data: site } = useGetSite();
 
   const isAdmin = member?.role === 'admin';
+  const isPublicLanding = location === '/' && !isSignedIn;
+
+  if (isPublicLanding) {
+    return (
+      <>
+        {site?.development && (
+          <div className="w-full bg-amber-100 text-amber-900 border-b border-amber-200 text-xs font-medium py-2 px-4 text-center">
+            Development preview — demo resources are not published
+          </div>
+        )}
+        <header className="relative z-40 w-full px-4 pt-4 md:px-8 md:pt-6">
+          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border border-[#dfe7df] bg-white/90 px-4 shadow-[0_10px_35px_rgba(20,37,31,0.08)] backdrop-blur-xl md:px-5">
+            <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]">
+              {site?.logoUrl ? (
+                <img src={site.logoUrl} alt={site.brandName || "EcomStack"} className="h-7 w-auto object-contain" />
+              ) : (
+                <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#193C36] text-xs leading-none text-[#E8F1E6]">
+                  {(site?.brandName || "EcomStack").charAt(0)}
+                </span>
+              )}
+              {!site?.logoUrl && (site?.brandName || "EcomStack")}
+            </Link>
+            <nav className="hidden items-center gap-7 text-sm font-semibold text-[#52645d] md:flex">
+              <a href="#whats-inside" className="transition-colors hover:text-[#193C36]">What&apos;s inside</a>
+              <Link href="/sign-in" className="transition-colors hover:text-[#193C36]">Sign in</Link>
+            </nav>
+            <Button asChild size="sm" className="rounded-full bg-[#193C36] px-4 text-white shadow-sm transition hover:bg-[#2F765F] sm:px-5">
+              <Link href="/sign-up">Create free account</Link>
+            </Button>
+          </div>
+        </header>
+      </>
+    );
+  }
 
   return (
     <>

@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUser } from "@clerk/react";
 import { ShopifyTile } from "@/components/shopify-tile";
+import { AppLogo } from "@/components/app-logo";
 
 const SHOPIFY_FALLBACK_URL = "https://shopify.pxf.io/the-ecom-king";
 type PendingProfile = Omit<MemberProfileInput, "email">;
@@ -170,7 +171,7 @@ export default function UnlockPage() {
       <PageMeta title="Start your store | EcomStack" />
       <div className="mx-auto w-full max-w-[1080px]">
         <header className="flex h-14 items-center justify-between rounded-full border border-[#dfe7df] bg-white/90 px-4 shadow-[0_10px_35px_rgba(20,37,31,0.08)] backdrop-blur-xl sm:px-5">
-          <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]"><span className="grid h-7 w-7 place-items-center rounded-lg bg-[#193C36] text-xs text-[#E8F1E6]">E</span>EcomStack</Link>
+          <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]"><AppLogo className="h-7 w-7 shrink-0 rounded-lg" />EcomStack</Link>
           <span className="text-sm font-semibold text-[#52645d]">Account setup</span>
         </header>
         <main className="relative mx-auto flex max-w-[800px] flex-col items-center pb-8 pt-9 sm:pt-12">
@@ -189,7 +190,6 @@ export default function UnlockPage() {
               </div>
               <p className="mt-6 max-w-[610px] text-base leading-7 text-[#607069]">You’ll need an active Shopify store to follow our Shopify-specific guides on your own store. If you’re starting a new store, use my link below, then return to put your prompts, skills and cheat sheets into action.</p>
               <p className="mt-4 text-sm font-medium text-[#52645d]">Starting through my link supports EcomStack.</p>
-              <p className="mt-4 text-sm font-semibold text-[#193c36]">Kamil · EcomStack</p>
 
             {shopifyOpened ? (
               <div className="mt-8 rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5">
@@ -203,7 +203,6 @@ export default function UnlockPage() {
                   {startClaim.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ExternalLink className="mr-2 h-5 w-5" />}
                   Start Shopify through my link ↗
                 </Button>
-                <p className="mt-3 text-center text-sm text-[#607069]">Opens in a new tab. Return here when you’re ready to explore the Vault.</p>
                 <p className="mt-4 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
               </div>
             )}

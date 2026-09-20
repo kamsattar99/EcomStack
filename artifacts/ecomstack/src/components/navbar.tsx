@@ -5,6 +5,7 @@ import { useGetMember, getGetMemberQueryKey, useGetSite } from "@workspace/api-c
 import { LogOut, LayoutDashboard, Settings, Library, Lock, User, LifeBuoy, Menu } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AppLogo } from "@/components/app-logo";
 
 export function Navbar() {
   const { isSignedIn, user } = useUser();
@@ -31,14 +32,8 @@ export function Navbar() {
         <header className="relative z-40 w-full px-4 pt-4 md:px-8 md:pt-6">
           <div className="mx-auto flex h-14 max-w-6xl items-center justify-between rounded-full border border-[#dfe7df] bg-white/90 px-4 shadow-[0_10px_35px_rgba(20,37,31,0.08)] backdrop-blur-xl md:px-5">
             <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]">
-              {site?.logoUrl ? (
-                <img src={site.logoUrl} alt={site.brandName || "EcomStack"} className="h-7 w-auto object-contain" />
-              ) : (
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#193C36] text-xs leading-none text-[#E8F1E6]">
-                  {(site?.brandName || "EcomStack").charAt(0)}
-                </span>
-              )}
-              {!site?.logoUrl && (site?.brandName || "EcomStack")}
+              <AppLogo className="h-7 w-7 shrink-0 rounded-lg" />
+              {site?.brandName || "EcomStack"}
             </Link>
             <nav className="hidden items-center gap-7 text-sm font-semibold text-[#52645d] md:flex">
               <a href="#whats-inside" className="transition-colors hover:text-[#193C36]">What&apos;s inside</a>
@@ -86,14 +81,8 @@ export function Navbar() {
             </div>
 
             <Link href="/" className="font-serif text-xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            {site?.logoUrl ? (
-              <img src={site.logoUrl} alt={site.brandName || "EcomStack"} className="h-8 w-auto object-contain" />
-            ) : (
-              <span className="w-6 h-6 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs leading-none">
-                {(site?.brandName || "EcomStack").charAt(0)}
-              </span>
-            )}
-            {!site?.logoUrl && (site?.brandName || "EcomStack")}
+            <AppLogo className="h-8 w-8 shrink-0 rounded-lg" />
+            {site?.brandName || "EcomStack"}
           </Link>
           
           <nav className="hidden md:flex items-center gap-6 ml-2 text-sm font-medium">

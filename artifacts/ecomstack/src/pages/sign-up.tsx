@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageMeta } from "@/components/page-meta";
+import { AppLogo } from "@/components/app-logo";
 import { SignupResourceIllustration } from "@/components/signup-resource-illustration";
 
 type RegistrationDetails = {
@@ -83,7 +84,7 @@ export default function SignUpPage() {
       <div className="mx-auto max-w-[1080px]">
         <header className="flex h-14 items-center justify-between rounded-full border border-[#dfe7df] bg-white/90 px-4 shadow-[0_10px_35px_rgba(20,37,31,0.08)] backdrop-blur-xl sm:px-5">
           <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold tracking-tight text-[#14251F]">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#193C36] text-xs text-[#E8F1E6]">E</span>
+            <AppLogo className="h-7 w-7 shrink-0 rounded-lg" />
             EcomStack
           </Link>
           {!isProfileCompletion && <Link href="/sign-in" className="text-sm font-semibold text-[#52645d] transition-colors hover:text-[#193C36]">Sign in</Link>}

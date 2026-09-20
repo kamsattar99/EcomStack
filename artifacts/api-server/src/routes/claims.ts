@@ -1,6 +1,6 @@
 import { and, eq, gt, lt, or, isNull } from "drizzle-orm";
 import { activityTable, claimsTable, db, resourcesTable, usersTable } from "@workspace/db";
-import { CheckClaimResponse, CompleteOnboardingBody, StartClaimBody, StartClaimResponse } from "@workspace/api-zod";
+import { CheckClaimResponse, CompleteOnboardingBody, SaveOnboardingReviewBody, StartClaimBody, StartClaimResponse } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
 import { requireUser, sameOrigin } from "../lib/auth";
 import { defaults } from "../lib/domain";
@@ -66,25 +66,47 @@ router.post("/claims/check", requireUser, sameOrigin, async (req, res): Promise<
   }
 });
 
-/** Records a member's required self-report; it never verifies attribution or grants entitlement. */
-router.post("/onboarding/complete", requireUser, sameOrigin, async (req, res): Promise<void> => {
-  const body = CompleteOnboardingBody.strict().safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: "Invalid onboarding choice" }); return; }
-  if (!body.data.shopifySelfReported) { res.status(400).json({ error: "Confirm your Shopify signup through Kamil’s link to continue." }); return; }
-  const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
-    .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
+async function saveMarketingPreference(userId: string, marketingOptIn: boolean | undefined) {
   const [member] = await db.select({
     shopifySelfReportedAt: usersTable.shopifySelfReportedAt,
+    shopifyReviewStartedAt: usersTable.shopifyReviewStartedAt,
+    shopifyFinalConfirmedAt: usersTable.shopifyFinalConfirmedAt,
     marketingOptIn: usersTable.marketingOptIn,
-  }).from(usersTable).where(eq(usersTable.id, req.ecomUser!.id)).limit(1);
+  }).from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   const now = new Date();
-  const preferenceUpdate = {
-    shopifySelfReportedAt: body.data.shopifySelfReported && !member?.shopifySelfReportedAt ? now : undefined,
-    marketingOptIn: body.data.marketingOptIn ?? member?.marketingOptIn ?? false,
-    marketingOptInAt: body.data.marketingOptIn === true ? now : body.data.marketingOptIn === false ? null : undefined,
-    marketingConsentVersion: body.data.marketingOptIn === true ? MARKETING_CONSENT_VERSION : body.data.marketingOptIn === false ? null : undefined,
-  };
-  await db.update(usersTable).set(preferenceUpdate).where(eq(usersTable.id, req.ecomUser!.id));
+  return { member, now, marketing: {
+    marketingOptIn: marketingOptIn ?? member?.marketingOptIn ?? false,
+    marketingOptInAt: marketingOptIn === true ? now : marketingOptIn === false ? null : undefined,
+    marketingConsentVersion: marketingOptIn === true ? MARKETING_CONSENT_VERSION : marketingOptIn === false ? null : undefined,
+  } };
+}
+
+/** Saves the provisional self-report and marketing choice without granting Vault access. */
+router.post("/onboarding/review", requireUser, sameOrigin, async (req, res): Promise<void> => {
+  const body = SaveOnboardingReviewBody.strict().safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Invalid onboarding review" }); return; }
+  const { member, now, marketing } = await saveMarketingPreference(req.ecomUser!.id, body.data.marketingOptIn);
+  await db.update(usersTable).set({
+    shopifyReviewStartedAt: member?.shopifyReviewStartedAt ?? now,
+    shopifySelfReportedAt: body.data.shopifySelfReported ? member?.shopifySelfReportedAt ?? now : null,
+    ...marketing,
+  }).where(eq(usersTable.id, req.ecomUser!.id));
+  res.json(CheckClaimResponse.parse({ message: "Onboarding review saved" }));
+});
+
+/** Records final self-report confirmation and completes onboarding; it never verifies attribution or grants entitlement. */
+router.post("/onboarding/complete", requireUser, sameOrigin, async (req, res): Promise<void> => {
+  const body = CompleteOnboardingBody.strict().safeParse(req.body);
+  if (!body.success || !body.data.shopifySelfReported) { res.status(400).json({ error: "Confirm your Shopify signup through Kamil’s link to continue." }); return; }
+  const [existing] = await db.select({ id: activityTable.id }).from(activityTable)
+    .where(and(eq(activityTable.userId, req.ecomUser!.id), eq(activityTable.action, "onboarding_completed"))).limit(1);
+  const { member, now, marketing } = await saveMarketingPreference(req.ecomUser!.id, body.data.marketingOptIn);
+  if (!member?.shopifyReviewStartedAt) { res.status(400).json({ error: "Review your Shopify signup before the final confirmation." }); return; }
+  await db.update(usersTable).set({
+    shopifySelfReportedAt: member.shopifySelfReportedAt ?? now,
+    shopifyFinalConfirmedAt: member.shopifyFinalConfirmedAt ?? now,
+    ...marketing,
+  }).where(eq(usersTable.id, req.ecomUser!.id));
   if (!existing) await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: "onboarding_completed" });
   await db.insert(activityTable).values({ userId: req.ecomUser!.id, action: body.data.decision === "started" ? "onboarding_started" : "onboarding_deferred" });
   res.json(CheckClaimResponse.parse({ message: "Onboarding complete" }));

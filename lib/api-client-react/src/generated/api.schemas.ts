@@ -169,6 +169,7 @@ export interface Member {
   /** @nullable */
   resumeSlug: string | null;
   shopifySelfReported: boolean;
+  shopifyReviewStarted: boolean;
   marketingOptIn: boolean;
   savedResources: Resource[];
   recentResources: Resource[];
@@ -198,6 +199,11 @@ export const OnboardingDecisionInputDecision = {
 
 export interface OnboardingDecisionInput {
   decision: OnboardingDecisionInputDecision;
+  shopifySelfReported: boolean;
+  marketingOptIn?: boolean;
+}
+
+export interface OnboardingReviewInput {
   shopifySelfReported: boolean;
   marketingOptIn?: boolean;
 }

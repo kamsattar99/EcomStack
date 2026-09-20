@@ -24,6 +24,8 @@ export const usersTable = pgTable("users", {
   phoneCountryCode: text("phone_country_code"),
   phoneNumber: text("phone_number"),
   shopifySelfReportedAt: timestamp("shopify_self_reported_at", { withTimezone: true }),
+  shopifyReviewStartedAt: timestamp("shopify_review_started_at", { withTimezone: true }),
+  shopifyFinalConfirmedAt: timestamp("shopify_final_confirmed_at", { withTimezone: true }),
   marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
   marketingOptInAt: timestamp("marketing_opt_in_at", { withTimezone: true }),
   marketingConsentVersion: text("marketing_consent_version"),

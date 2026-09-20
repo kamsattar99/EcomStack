@@ -31,6 +31,7 @@ export * from './memberRole';
 export * from './message';
 export * from './onboardingDecisionInput';
 export * from './onboardingDecisionInputDecision';
+export * from './onboardingReviewInput';
 export * from './protectedContent';
 export * from './resource';
 export * from './resourceDetail';

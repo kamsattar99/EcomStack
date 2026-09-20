@@ -14,6 +14,7 @@ import LibraryPage from '@/pages/library';
 import ResourceDetailPage from '@/pages/resource-detail';
 import DashboardPage from '@/pages/dashboard';
 import UnlockPage from '@/pages/unlock';
+import UnlockConfirmPage from '@/pages/unlock-confirm';
 import SupportPage from '@/pages/support';
 
 import AdminOverviewPage from '@/pages/admin/overview';
@@ -179,6 +180,7 @@ function AppRoutes() {
         <Route path="/sign-up/*?" component={SignUpPage} />
         
         <Route path="/dashboard"><ProtectedRoute component={DashboardPage} /></Route>
+        <Route path="/unlock/confirm"><ProtectedRoute component={UnlockConfirmPage} /></Route>
         <Route path="/unlock"><ProtectedRoute component={UnlockPage} /></Route>
         <Route path="/support"><ProtectedRoute component={SupportPage} /></Route>
 

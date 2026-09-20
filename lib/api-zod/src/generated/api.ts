@@ -172,6 +172,7 @@ export const GetMemberResponse = zod.object({
   "lastCheckedAt": zod.string().nullable(),
   "resumeSlug": zod.string().nullable(),
   "shopifySelfReported": zod.boolean(),
+  "shopifyReviewStarted": zod.boolean(),
   "marketingOptIn": zod.boolean(),
   "savedResources": zod.array(zod.object({
   "id": zod.string(),
@@ -254,6 +255,16 @@ export const CompleteOnboardingBody = zod.object({
 })
 
 export const CompleteOnboardingResponse = zod.object({
+  "message": zod.string()
+})
+
+
+export const SaveOnboardingReviewBody = zod.object({
+  "shopifySelfReported": zod.boolean(),
+  "marketingOptIn": zod.boolean().optional()
+})
+
+export const SaveOnboardingReviewResponse = zod.object({
   "message": zod.string()
 })
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useStartClaim, useCompleteOnboarding, useGetMember, getGetMemberQueryKey, useRecordOnboardingView, useUpdateMemberProfile } from "@workspace/api-client-react";
+import { useStartClaim, useSaveOnboardingReview, useGetMember, getGetMemberQueryKey, useRecordOnboardingView, useUpdateMemberProfile } from "@workspace/api-client-react";
 import type { MemberProfileInput } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +20,7 @@ export default function UnlockPage() {
   const { isLoaded: clerkLoaded, user } = useUser();
   const { data: member, isLoading: memberLoading } = useGetMember({ query: { queryKey: getGetMemberQueryKey() } });
   const startClaim = useStartClaim();
-  const completeOnboarding = useCompleteOnboarding();
+  const saveOnboardingReview = useSaveOnboardingReview();
   const recordOnboardingView = useRecordOnboardingView();
   const updateMemberProfile = useUpdateMemberProfile();
   const [, setLocation] = useLocation();
@@ -73,6 +73,10 @@ export default function UnlockPage() {
   useEffect(() => {
     if (!memberLoading && member?.onboardingCompleted) setLocation("/dashboard");
   }, [member?.onboardingCompleted, memberLoading, setLocation]);
+
+  useEffect(() => {
+    if (!memberLoading && member?.shopifyReviewStarted && !member.onboardingCompleted) setLocation("/unlock/confirm");
+  }, [member?.shopifyReviewStarted, member?.onboardingCompleted, memberLoading, setLocation]);
 
   useEffect(() => {
     if (!member) return;
@@ -141,22 +145,11 @@ export default function UnlockPage() {
   };
 
   const handleContinue = () => {
-    if (!shopifySelfReported || completeOnboarding.isPending) return;
-    completeOnboarding.mutate({ data: { decision: "started", shopifySelfReported, marketingOptIn } }, {
-      onSuccess: () => {
-        let resourceSlug: string | null = null;
-        try { resourceSlug = sessionStorage.getItem('pendingResourceSlug'); }
-        catch {}
-        try {
-          sessionStorage.removeItem('pendingResourceSlug');
-          sessionStorage.removeItem('pendingIntent');
-        } catch {}
-        queryClient.invalidateQueries({ queryKey: getGetMemberQueryKey() });
-        if (resourceSlug) {
-          setLocation(`/resources/${resourceSlug}`);
-        } else {
-          setLocation("/dashboard");
-        }
+    if (!shopifySelfReported || saveOnboardingReview.isPending) return;
+    saveOnboardingReview.mutate({ data: { shopifySelfReported, marketingOptIn } }, {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: getGetMemberQueryKey() });
+        setLocation("/unlock/confirm");
       },
       onError: () => {
         toast({ variant: "destructive", title: "Something went wrong", description: "Please try again." });
@@ -196,7 +189,7 @@ export default function UnlockPage() {
                 <p className="mt-2 text-center text-xs text-[#6c7b72]">We may earn a commission if you sign up through this link.</p>
               </div>
 
-            <fieldset className="mt-6 space-y-4 border-t border-[#dce7dd] pt-5" disabled={memberLoading || completeOnboarding.isPending}>
+            <fieldset className="mt-6 space-y-4 border-t border-[#dce7dd] pt-5" disabled={memberLoading || saveOnboardingReview.isPending}>
               <legend className="sr-only">Shopify confirmation and email preferences</legend>
               <label className="flex cursor-pointer items-start gap-3 rounded-lg py-1 text-sm leading-6 text-[#42574b]">
                 <input type="checkbox" checked={shopifySelfReported} onChange={(event) => setShopifySelfReported(event.target.checked)} className="mt-1 h-4 w-4 shrink-0 rounded border-[#9eb7a2] text-[#193C36] focus:ring-2 focus:ring-[#2F765F] focus:ring-offset-2" />
@@ -208,9 +201,9 @@ export default function UnlockPage() {
               </label>
             </fieldset>
 
-            <Button className={`mt-5 h-[54px] w-full rounded-xl text-base transition ${shopifySelfReported ? "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]" : "bg-[#e6ece7] text-[#75827a] hover:bg-[#e6ece7]"}`} onClick={handleContinue} disabled={!shopifySelfReported || completeOnboarding.isPending || memberLoading}>
-              {completeOnboarding.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-              {completeOnboarding.isPending ? "Saving…" : "Continue to the Vault →"}
+            <Button className={`mt-5 h-[54px] w-full rounded-xl text-base transition ${shopifySelfReported ? "bg-[#193c36] text-white shadow-[0_7px_14px_rgba(25,60,54,.14)] hover:bg-[#24584e]" : "bg-[#e6ece7] text-[#75827a] hover:bg-[#e6ece7]"}`} onClick={handleContinue} disabled={!shopifySelfReported || saveOnboardingReview.isPending || memberLoading}>
+              {saveOnboardingReview.isPending ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {saveOnboardingReview.isPending ? "Saving…" : "Review confirmation →"}
             </Button>
             <p className="mt-2 min-h-5 text-center text-sm text-[#65756d]">{shopifySelfReported ? "\u00a0" : "Confirm you signed up through Kamil’s link to continue."}</p>
 

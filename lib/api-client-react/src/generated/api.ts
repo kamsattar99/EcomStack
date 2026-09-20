@@ -36,6 +36,7 @@ import type {
   MemberProfileInput,
   Message,
   OnboardingDecisionInput,
+  OnboardingReviewInput,
   ProtectedContent,
   Resource,
   ResourceDetail,
@@ -923,6 +924,88 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCompleteOnboardingMutationOptions(options));
+    }
+
+export const getSaveOnboardingReviewUrl = () => {
+
+
+
+
+  return `/api/onboarding/review`
+}
+
+export const saveOnboardingReview = async (onboardingReviewInput: OnboardingReviewInput, options?: Parameters<typeof customFetch>[1]): Promise<Message> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Message>(getSaveOnboardingReviewUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(onboardingReviewInput)
+  }
+);}
+
+
+
+
+
+export const getSaveOnboardingReviewMutationKey = () => ['saveOnboardingReview'] as const;
+
+export const getSaveOnboardingReviewMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveOnboardingReview>>, TError,SaveOnboardingReviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveOnboardingReview>>, TError,SaveOnboardingReviewMutationVariables, TContext> => {
+
+const mutationKey = getSaveOnboardingReviewMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveOnboardingReview>>, SaveOnboardingReviewMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveOnboardingReview(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveOnboardingReviewMutationResult = NonNullable<Awaited<ReturnType<typeof saveOnboardingReview>>>
+    export type SaveOnboardingReviewMutationBody = BodyType<OnboardingReviewInput>
+    export type SaveOnboardingReviewMutationError = ErrorType<void>
+    export type SaveOnboardingReviewMutationVariables = {data: BodyType<OnboardingReviewInput>}
+
+    export const useSaveOnboardingReview = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveOnboardingReview>>, TError,SaveOnboardingReviewMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveOnboardingReview>>,
+        TError,
+        SaveOnboardingReviewMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveOnboardingReviewMutationOptions(options));
     }
 
 export const getRecordOnboardingViewUrl = () => {

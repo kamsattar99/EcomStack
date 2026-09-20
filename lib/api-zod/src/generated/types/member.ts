@@ -20,6 +20,7 @@ export interface Member {
   /** @nullable */
   resumeSlug: string | null;
   shopifySelfReported: boolean;
+  shopifyReviewStarted: boolean;
   marketingOptIn: boolean;
   savedResources: Resource[];
   recentResources: Resource[];

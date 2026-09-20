@@ -450,6 +450,39 @@
         }
       }
     },
+    "/onboarding/review": {
+      "post": {
+        "operationId": "saveOnboardingReview",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingReviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required"
+          }
+        }
+      }
+    },
     "/onboarding/view": {
       "post": {
         "operationId": "recordOnboardingView",
@@ -1757,6 +1790,9 @@
           "shopifySelfReported": {
             "type": "boolean"
           },
+          "shopifyReviewStarted": {
+            "type": "boolean"
+          },
           "marketingOptIn": {
             "type": "boolean"
           },
@@ -1783,6 +1819,7 @@
           "lastCheckedAt",
           "resumeSlug",
           "shopifySelfReported",
+          "shopifyReviewStarted",
           "marketingOptIn",
           "savedResources",
           "recentResources"
@@ -1832,6 +1869,21 @@
         },
         "required": [
           "decision",
+          "shopifySelfReported"
+        ],
+        "additionalProperties": false
+      },
+      "OnboardingReviewInput": {
+        "type": "object",
+        "properties": {
+          "shopifySelfReported": {
+            "type": "boolean"
+          },
+          "marketingOptIn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
           "shopifySelfReported"
         ],
         "additionalProperties": false

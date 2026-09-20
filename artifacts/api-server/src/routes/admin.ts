@@ -102,33 +102,10 @@ router.get("/admin/overview", async (_req, res): Promise<void> => {
 });
 
 router.get("/admin/resources", async (_req, res): Promise<void> => { res.json(ListAdminResourcesResponse.parse((await db.select().from(resourcesTable)).map((r) => resourceDto(r, r.coverAssetId ? `/api/assets/${r.coverAssetId}/cover` : "")))); });
-router.post("/admin/resources/import", sameOrigin, async (req, res): Promise<void> => {
-  const body = ImportResourceFromUrlBody.strict().safeParse(req.body);
-  if (!body.success) { res.status(400).json({ error: "Enter a valid public HTTPS URL" }); return; }
-  try {
-    const url = await assertPublicUrl(body.data.url);
-    const response = await fetch(url, { headers: { Accept: "text/html,application/xhtml+xml" }, redirect: "error", signal: AbortSignal.timeout(15_000) });
-    if (!response.ok) throw new Error(`The website returned ${response.status}`);
-    if (!response.headers.get("content-type")?.toLowerCase().includes("text/html")) throw new Error("That link must point to a web page");
-    const html = await readPage(response);
-    const text = extractText(html);
-    if (text.length < 80) throw new Error("There was not enough readable content on that page");
-    const pageTitle = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "")).replace(/<[^>]+>/g, " ").trim();
-    const title = (metaValue(html, ["og:title", "twitter:title"]) || pageTitle || text.split("\n")[0] || url.hostname).slice(0, 160);
-    const description = (metaValue(html, ["description", "og:description", "twitter:description"]) || text.replace(/\s+/g, " ").slice(0, 360)).slice(0, 500);
-    const content = `# ${title}\n\nSource: ${url.toString()}\n\n${text.slice(0, 16_000)}`;
-    res.json(ImportResourceFromUrlResponse.parse({
-      title, slug: slugify(title), description, type: /prompt/i.test(`${title} ${text.slice(0, 1000)}`) ? "Prompt" : "Skill",
-      preview: description, content, useCase: description,
-      instructions: "Review and refine this imported draft before publishing. Confirm that you have permission to reuse the source material.",
-      sourceUrl: url.toString(),
-      sourceNotes: "Review source ownership and permission before publishing.",
-    }));
-  } catch (error) {
-    const message = error instanceof Error && error.message.length <= 200 ? error.message : "Unable to import that link";
-    req.log.warn({ err: error }, "Resource import failed");
-    res.status(400).json({ error: message });
-  }
+router.post("/admin/resources/import", sameOrigin, (_req, res): void => {
+  res.status(410).json({
+    error: "Importing from a URL is temporarily unavailable. Create the draft manually or upload a file instead.",
+  });
 });
 async function publishFieldErrors(input: { title: string }) {
   const fields: Record<string, string> = {};

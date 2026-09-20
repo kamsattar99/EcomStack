@@ -5,19 +5,17 @@ import {
   useCreateResource, 
   useUpdateResource,
   useListTaxonomies,
-  getGetAdminResourceQueryKey,
-  useImportResourceFromUrl
+  getGetAdminResourceQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resourceSchema, ResourceFormValues } from "./editor/schema";
 import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2, Save, Wand2 } from "lucide-react";
+import { ChevronLeft, Loader2, Save } from "lucide-react";
 import { EditorSaveStatus, SaveStatus } from "@/components/admin/EditorSaveStatus";
 import { ResourceDetailsStep } from "@/components/admin/ResourceDetailsStep";
 import { ResourceContentStep } from "@/components/admin/ResourceContentStep";
@@ -52,8 +50,6 @@ export default function AdminResourceEditorPage() {
   
   const createResource = useCreateResource();
   const updateResource = useUpdateResource();
-  const importResource = useImportResourceFromUrl();
-  const [importUrl, setImportUrl] = useState("");
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
@@ -129,45 +125,6 @@ export default function AdminResourceEditorPage() {
       if (handler) clearTimeout(handler);
     };
   }, [formValues, isNew, id, updateResource, queryClient, form]);
-
-  const [importDraft, setImportDraft] = useState<any>(null);
-
-  const handleImport = () => {
-    if (!importUrl.trim()) {
-      toast({ variant: "destructive", title: "Paste a public HTTPS link first" });
-      return;
-    }
-    importResource.mutate({ data: { url: importUrl.trim() } }, {
-      onSuccess: (draft) => {
-        setImportDraft(draft);
-      },
-      onError: (error: any) => {
-        toast({ variant: "destructive", title: "Import failed", description: error?.data?.error || "Try another public HTTPS page." });
-      }
-    });
-  };
-
-  const applyImport = () => {
-    if (!importDraft) return;
-    form.reset({
-      ...form.getValues(),
-      title: importDraft.title,
-      slug: importDraft.slug,
-      description: importDraft.description,
-      type: importDraft.type,
-      category: form.getValues("category") || categories[0]?.name || "",
-      tool: form.getValues("tool") || tools[0]?.name || "",
-      preview: importDraft.preview,
-      content: importDraft.content,
-      instructions: importDraft.instructions,
-      useCase: importDraft.useCase,
-      sourceUrl: importDraft.sourceUrl,
-      sourceNotes: importDraft.sourceNotes,
-      status: "draft",
-    });
-    toast({ title: "Draft imported", description: "Review the fields and save when ready." });
-    setImportDraft(null);
-  };
 
   const ensureCreated = async (): Promise<boolean> => {
     if (!isNew) return true;
@@ -359,39 +316,6 @@ export default function AdminResourceEditorPage() {
           </button>
         ))}
       </div>
-
-      {isNew && currentStep === 1 && (
-        <Card className="mb-8 border-[#cbdacb] bg-[#f6faf5] animate-in fade-in duration-300">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg"><Wand2 className="h-5 w-5 text-[#2F765F]" />Import from a link</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 text-sm text-muted-foreground">Paste a public HTTPS page to create a draft from its title, description, and readable content.</p>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Input value={importUrl} onChange={(event) => setImportUrl(event.target.value)} type="url" placeholder="https://example.com/resource" className="bg-white" />
-              <Button type="button" onClick={handleImport} disabled={importResource.isPending} className="shrink-0">
-                {importResource.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                Import draft
-              </Button>
-            </div>
-
-            {importDraft && (
-              <div className="mt-6 p-4 border border-primary/20 bg-white rounded-xl">
-                <h4 className="font-medium mb-3">Found Resource</h4>
-                <div className="space-y-2 mb-4 text-sm">
-                  <p><strong>Title:</strong> {importDraft.title}</p>
-                  <p><strong>Description:</strong> {importDraft.description}</p>
-                  <p><strong>Type:</strong> {importDraft.type}</p>
-                </div>
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" size="sm" onClick={() => setImportDraft(null)}>Discard</Button>
-                  <Button size="sm" onClick={applyImport}>Apply to Draft</Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <Form {...form}>
         <div className="pb-24">

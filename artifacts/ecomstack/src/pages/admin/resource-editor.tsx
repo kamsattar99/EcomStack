@@ -55,6 +55,10 @@ export function getResourceChecklist(values: ResourceFormValues, fileAssetsCount
   return checks;
 }
 
+function createSlug(title: string) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
 export default function AdminResourceEditorPage() {
   const { id } = useParams<{ id: string }>();
   const isNew = !id || id === "new";
@@ -199,14 +203,24 @@ export default function AdminResourceEditorPage() {
         toast({ variant: "destructive", title: "Title required", description: "Give your resource a title before continuing." });
         return false;
       }
+      const slug = data.slug || createSlug(data.title);
+      if (!slug) {
+        toast({ variant: "destructive", title: "A valid title is required", description: "Use letters or numbers so we can create the resource URL." });
+        return false;
+      }
+      if (slug !== data.slug) form.setValue("slug", slug, { shouldDirty: true });
       setSaveStatus('saving');
-      const res = await createResource.mutateAsync({ data });
+      const res = await createResource.mutateAsync({ data: { ...data, slug } });
       toast({ title: "Draft created" });
       setLocation(`/admin/resources/${res.resource.id}`, { replace: true });
       return true;
     } catch (err) {
       setSaveStatus('failed');
-      toast({ variant: "destructive", title: "Failed to create draft" });
+      toast({
+        variant: "destructive",
+        title: "Failed to create draft",
+        description: err instanceof Error ? err.message.replace(/^HTTP \d+ [^:]+:\s*/, "") : "Please try again.",
+      });
       return false;
     }
   };

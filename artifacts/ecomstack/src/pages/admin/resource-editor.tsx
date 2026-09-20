@@ -8,7 +8,8 @@ import {
   getGetAdminResourceQueryKey,
   useRequestAssetUpload,
   useConfirmAsset,
-  useDeleteAsset
+  useDeleteAsset,
+  useImportResourceFromUrl
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -22,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2, Save, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, Loader2, Save, Trash2, Upload, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const resourceSchema = z.object({
@@ -68,7 +69,9 @@ export default function AdminResourceEditorPage() {
   const requestAsset = useRequestAssetUpload();
   const confirmAsset = useConfirmAsset();
   const deleteAsset = useDeleteAsset();
+  const importResource = useImportResourceFromUrl();
   const [uploading, setUploading] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
 
   const form = useForm<ResourceFormValues>({
     resolver: zodResolver(resourceSchema),
@@ -144,6 +147,34 @@ export default function AdminResourceEditorPage() {
       toast({ variant: "destructive", title: "Failed to delete asset" });
     }
   };
+  const handleImport = () => {
+    if (!importUrl.trim()) {
+      toast({ variant: "destructive", title: "Paste a public HTTPS link first" });
+      return;
+    }
+    importResource.mutate({ data: { url: importUrl.trim() } }, {
+      onSuccess: (draft) => {
+        form.reset({
+          ...form.getValues(),
+          title: draft.title,
+          slug: draft.slug,
+          description: draft.description,
+          type: draft.type,
+          category: form.getValues("category") || categories[0]?.name || "",
+          tool: form.getValues("tool") || tools[0]?.name || "",
+          preview: draft.preview,
+          content: draft.content,
+          instructions: draft.instructions,
+          useCase: draft.useCase,
+          status: "draft",
+        });
+        toast({ title: "Draft imported", description: "Review the fields and save when ready." });
+      },
+      onError: (error: any) => {
+        toast({ variant: "destructive", title: "Import failed", description: error?.data?.error || "Try another public HTTPS page." });
+      }
+    });
+  };
 
   const onSubmit = (data: ResourceFormValues) => {
     if (isNew) {
@@ -189,6 +220,23 @@ export default function AdminResourceEditorPage() {
           </div>
         </div>
       </div>
+      {isNew && (
+        <Card className="mb-8 border-[#cbdacb] bg-[#f6faf5]">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg"><Wand2 className="h-5 w-5 text-[#2F765F]" />Import from a link</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-muted-foreground">Paste a public HTTPS page to create a draft from its title, description, and readable content. Review it before saving or publishing.</p>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Input value={importUrl} onChange={(event) => setImportUrl(event.target.value)} type="url" placeholder="https://example.com/resource" className="bg-white" />
+              <Button type="button" onClick={handleImport} disabled={importResource.isPending} className="shrink-0">
+                {importResource.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                Import draft
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -395,11 +443,12 @@ export default function AdminResourceEditorPage() {
                        <h3 className="font-medium mb-2">Upload Asset</h3>
                        <p className="text-sm text-muted-foreground mb-4">Add downloadable files, cheat sheets or templates.</p>
                        <div className="relative inline-block">
-                         <Button disabled={uploading}>
+                          <Button type="button" disabled={uploading}>
                            {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
                          </Button>
                          <input 
                            type="file" 
+                            accept=".md,.zip,.pdf,.png,.jpg,.jpeg,.webp,text/markdown,text/plain,application/zip,application/pdf,image/png,image/jpeg,image/webp"
                            onChange={handleAssetUpload}
                            disabled={uploading}
                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 

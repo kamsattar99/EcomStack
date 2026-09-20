@@ -672,6 +672,45 @@
         }
       }
     },
+    "/admin/resources/import": {
+      "post": {
+        "operationId": "importResourceFromUrl",
+        "tags": [
+          "ecomstack"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceImportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported resource draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportedResourceDraft"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The URL could not be imported"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
     "/admin/resources/{id}": {
       "get": {
         "operationId": "getAdminResource",
@@ -1621,6 +1660,64 @@
           "content",
           "status",
           "isFree"
+        ]
+      },
+      "ResourceImportInput": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 8,
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "ImportedResourceDraft": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Prompt",
+              "Skill",
+              "Cheat Sheet"
+            ]
+          },
+          "preview": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "useCase": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "description",
+          "type",
+          "preview",
+          "content",
+          "instructions",
+          "useCase"
         ]
       },
       "ResourceDetail": {

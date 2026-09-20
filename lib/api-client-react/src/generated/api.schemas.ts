@@ -115,6 +115,34 @@ export interface ResourceInput {
   content: string;
 }
 
+export interface ResourceImportInput {
+  /**
+     * @minLength 8
+     * @maxLength 2048
+     */
+  url: string;
+}
+
+export type ImportedResourceDraftType = typeof ImportedResourceDraftType[keyof typeof ImportedResourceDraftType];
+
+
+export const ImportedResourceDraftType = {
+  Prompt: 'Prompt',
+  Skill: 'Skill',
+  Cheat_Sheet: 'Cheat Sheet',
+} as const;
+
+export interface ImportedResourceDraft {
+  title: string;
+  slug: string;
+  description: string;
+  type: ImportedResourceDraftType;
+  preview: string;
+  content: string;
+  instructions: string;
+  useCase: string;
+}
+
 export interface ResourceDetail {
   resource: Resource;
   related: Resource[];

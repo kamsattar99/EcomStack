@@ -1,9 +1,11 @@
 import { and, desc, eq, sql } from "drizzle-orm";
+import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
 import { accessGrantsTable, activityTable, assetsTable, auditTable, claimsTable, db, resourcesTable, settingsTable, supportTable, syncCheckpointsTable, taxonomiesTable, usersTable } from "@workspace/db";
 import {
   ChangeAccessBody, CreateResourceBody, CreateResourceResponse, CreateTaxonomyBody, GetAdminOverviewResponse,
   GetAdminResourceParams, GetAdminResourceResponse, GetAdminSettingsResponse, GetSyncStatusResponse, ListAdminResourcesResponse,
-  ListSupportRequestsResponse, ListTaxonomiesResponse, ListUsersResponse, UpdateResourceBody, UpdateResourceParams,
+  ImportResourceFromUrlBody, ImportResourceFromUrlResponse, ListSupportRequestsResponse, ListTaxonomiesResponse, ListUsersResponse, UpdateResourceBody, UpdateResourceParams,
   RunImpactDiagnosticResponse, RunImpactSyncResponse, UpdateSettingsBody, UpdateSupportRequestBody, UpdateTaxonomyBody,
 } from "@workspace/api-zod";
 import { Router, type IRouter } from "express";
@@ -26,6 +28,66 @@ async function resourceWithContent(id: string) {
   if (!r) return null;
   return { resource: resourceDto(r, r.coverAssetId ? `/api/assets/${r.coverAssetId}/cover` : ""), content: r.content, assets: await resourceAssets(r.id) };
 }
+function isPrivateAddress(address: string): boolean {
+  if (isIP(address) === 4) {
+    const [a, b] = address.split(".").map(Number);
+    return a === 0 || a === 10 || a === 127 || a >= 224 || (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+  }
+  const value = address.toLowerCase();
+  return value === "::1" || value.startsWith("fc") || value.startsWith("fd") || value.startsWith("fe80:");
+}
+async function assertPublicUrl(value: string): Promise<URL> {
+  let url: URL;
+  try { url = new URL(value); } catch { throw new Error("Enter a valid public HTTPS URL"); }
+  if (url.protocol !== "https:" || url.username || url.password || !url.hostname) throw new Error("Enter a valid public HTTPS URL");
+  const records = isIP(url.hostname) ? [{ address: url.hostname }] : await lookup(url.hostname, { all: true, verbatim: true });
+  if (!records.length || records.some((record) => isPrivateAddress(record.address))) throw new Error("That link does not point to a public website");
+  return url;
+}
+function decodeHtml(value: string): string {
+  return value.replace(/&#x([\da-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, decimal: string) => String.fromCodePoint(parseInt(decimal, 10)))
+    .replace(/&(nbsp|amp|quot|apos|lt|gt);/gi, (_, entity: string) => ({ nbsp: " ", amp: "&", quot: '"', apos: "'", lt: "<", gt: ">" })[entity.toLowerCase()] ?? " ");
+}
+function extractText(html: string): string {
+  return decodeHtml(html.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|noscript|svg)[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .replace(/<\/(p|div|section|article|h[1-6]|li|br|tr)>/gi, "\n").replace(/<[^>]+>/g, " "))
+    .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").replace(/[ \t]{2,}/g, " ").trim();
+}
+function attribute(tag: string, name: string): string {
+  const match = tag.match(new RegExp(`${name}\\s*=\\s*["']([^"']*)["']`, "i"));
+  return match?.[1] ?? "";
+}
+function metaValue(html: string, keys: string[]): string {
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    const key = (attribute(tag, "name") || attribute(tag, "property")).toLowerCase();
+    if (keys.includes(key)) return decodeHtml(attribute(tag, "content")).trim();
+  }
+  return "";
+}
+function slugify(value: string): string {
+  return value.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "imported-resource";
+}
+async function readPage(response: Response): Promise<string> {
+  const advertisedLength = Number(response.headers.get("content-length") ?? 0);
+  if (advertisedLength > 1_000_000) throw new Error("That page is too large to import");
+  if (!response.body) throw new Error("The page could not be read");
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > 1_000_000) { await reader.cancel(); throw new Error("That page is too large to import"); }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder().decode(body);
+}
 
 router.get("/admin/overview", async (_req, res): Promise<void> => {
   const count = async (table: typeof usersTable, condition?: ReturnType<typeof eq>) => Number((await db.select({ n: sql<number>`count(*)` }).from(table).where(condition)).at(0)?.n ?? 0);
@@ -40,6 +102,32 @@ router.get("/admin/overview", async (_req, res): Promise<void> => {
 });
 
 router.get("/admin/resources", async (_req, res): Promise<void> => { res.json(ListAdminResourcesResponse.parse((await db.select().from(resourcesTable)).map((r) => resourceDto(r, r.coverAssetId ? `/api/assets/${r.coverAssetId}/cover` : "")))); });
+router.post("/admin/resources/import", sameOrigin, async (req, res): Promise<void> => {
+  const body = ImportResourceFromUrlBody.strict().safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: "Enter a valid public HTTPS URL" }); return; }
+  try {
+    const url = await assertPublicUrl(body.data.url);
+    const response = await fetch(url, { headers: { Accept: "text/html,application/xhtml+xml" }, redirect: "error", signal: AbortSignal.timeout(15_000) });
+    if (!response.ok) throw new Error(`The website returned ${response.status}`);
+    if (!response.headers.get("content-type")?.toLowerCase().includes("text/html")) throw new Error("That link must point to a web page");
+    const html = await readPage(response);
+    const text = extractText(html);
+    if (text.length < 80) throw new Error("There was not enough readable content on that page");
+    const pageTitle = decodeHtml((html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "")).replace(/<[^>]+>/g, " ").trim();
+    const title = (metaValue(html, ["og:title", "twitter:title"]) || pageTitle || text.split("\n")[0] || url.hostname).slice(0, 160);
+    const description = (metaValue(html, ["description", "og:description", "twitter:description"]) || text.replace(/\s+/g, " ").slice(0, 360)).slice(0, 500);
+    const content = `# ${title}\n\nSource: ${url.toString()}\n\n${text.slice(0, 16_000)}`;
+    res.json(ImportResourceFromUrlResponse.parse({
+      title, slug: slugify(title), description, type: /prompt/i.test(`${title} ${text.slice(0, 1000)}`) ? "Prompt" : "Skill",
+      preview: description, content, useCase: description,
+      instructions: "Review and refine this imported draft before publishing. Confirm that you have permission to reuse the source material.",
+    }));
+  } catch (error) {
+    const message = error instanceof Error && error.message.length <= 200 ? error.message : "Unable to import that link";
+    req.log.warn({ err: error }, "Resource import failed");
+    res.status(400).json({ error: message });
+  }
+});
 async function saveResource(req: Parameters<typeof router.post>[1] extends never ? never : any, res: any, id?: string): Promise<void> {
   const body = (id ? UpdateResourceBody : CreateResourceBody).strict().safeParse(req.body);
   if (!body.success || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(body.data.slug)) { res.status(400).json({ error: "Invalid resource" }); return; }

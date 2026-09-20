@@ -388,6 +388,27 @@ export const CreateResourceResponse = zod.object({
 })
 
 
+export const importResourceFromUrlBodyUrlMin = 8;
+export const importResourceFromUrlBodyUrlMax = 2048;
+
+
+
+export const ImportResourceFromUrlBody = zod.object({
+  "url": zod.string().url().min(importResourceFromUrlBodyUrlMin).max(importResourceFromUrlBodyUrlMax)
+})
+
+export const ImportResourceFromUrlResponse = zod.object({
+  "title": zod.string(),
+  "slug": zod.string(),
+  "description": zod.string(),
+  "type": zod.enum(['Prompt', 'Skill', 'Cheat Sheet']),
+  "preview": zod.string(),
+  "content": zod.string(),
+  "instructions": zod.string(),
+  "useCase": zod.string()
+})
+
+
 export const GetAdminResourceParams = zod.object({
   "id": zod.coerce.string()
 })

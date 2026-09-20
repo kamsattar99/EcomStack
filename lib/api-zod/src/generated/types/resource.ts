@@ -27,4 +27,6 @@ export interface Resource {
   status: ResourceStatus;
   updatedAt: string;
   coverUrl: string;
+  sourceUrl: string;
+  sourceNotes: string;
 }

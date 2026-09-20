@@ -34,6 +34,8 @@ export interface Asset {
   size: number;
   resourceId: string;
   kind: string;
+  status: string;
+  expiresAt: string | null;
 }
 
 export type ResourceType = typeof ResourceType[keyof typeof ResourceType];
@@ -74,6 +76,8 @@ export interface Resource {
   status: ResourceStatus;
   updatedAt: string;
   coverUrl: string;
+  sourceUrl: string;
+  sourceNotes: string;
 }
 
 export type ResourceInputType = typeof ResourceInputType[keyof typeof ResourceInputType];
@@ -113,6 +117,8 @@ export interface ResourceInput {
   status: ResourceInputStatus;
   coverUrl?: string;
   content: string;
+  sourceUrl?: string;
+  sourceNotes?: string;
 }
 
 export interface ResourceImportInput {
@@ -141,6 +147,8 @@ export interface ImportedResourceDraft {
   content: string;
   instructions: string;
   useCase: string;
+  sourceUrl: string;
+  sourceNotes: string;
 }
 
 export interface ResourceDetail {
@@ -481,6 +489,14 @@ export interface UploadInput {
 export interface UploadResult {
   assetId: string;
   uploadURL: string;
+}
+
+export type ErrorResponseFields = {[key: string]: string};
+
+export interface ErrorResponse {
+  error: string;
+  code: string;
+  fields?: ErrorResponseFields;
 }
 
 export interface AssetConfirm {

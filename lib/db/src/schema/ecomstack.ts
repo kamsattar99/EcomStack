@@ -53,6 +53,8 @@ export const resourcesTable = pgTable("resources", {
   isDemo: boolean("is_demo").notNull().default(false),
   status: text("status").notNull().default("draft"),
   coverAssetId: uuid("cover_asset_id"),
+  sourceUrl: text("source_url").notNull().default(""),
+  sourceNotes: text("source_notes").notNull().default(""),
   content: text("content").notNull().default(""),
   createdAt: created(),
   updatedAt: updated(),
@@ -66,7 +68,8 @@ export const assetsTable = pgTable("assets", {
   id: id(), resourceId: uuid("resource_id").notNull().references(() => resourcesTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(), contentType: text("content_type").notNull(), size: integer("size").notNull(),
   kind: text("kind").notNull(), status: text("status").notNull().default("pending"),
-  temporaryPath: text("temporary_path"), objectPath: text("object_path"), createdAt: created(), confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+   temporaryPath: text("temporary_path"), objectPath: text("object_path"), createdAt: created(), confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+   expiresAt: timestamp("expires_at", { withTimezone: true }),
 });
 
 export const bookmarksTable = pgTable("bookmarks", {

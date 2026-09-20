@@ -12,4 +12,6 @@ export interface Asset {
   size: number;
   resourceId: string;
   kind: string;
+  status: string;
+  expiresAt: Date | null;
 }

@@ -20,6 +20,8 @@ export * from './bookmarkInput';
 export * from './claimInput';
 export * from './claimResult';
 export * from './diagnosticRecord';
+export * from './errorResponse';
+export * from './errorResponseFields';
 export * from './grantInput';
 export * from './grantInputAction';
 export * from './healthStatus';

@@ -661,7 +661,14 @@
             }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request or publish readiness failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Sign in required"
@@ -786,7 +793,14 @@
             }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request or publish readiness failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Sign in required"
@@ -1285,7 +1299,14 @@
             }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid file metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Sign in required"
@@ -1324,7 +1345,34 @@
             }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Upload validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Upload is already being processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Upload URL expired",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Sign in required"
@@ -1363,7 +1411,14 @@
             }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Asset deletion failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "401": {
             "description": "Sign in required"
@@ -1471,6 +1526,14 @@
           },
           "kind": {
             "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "required": [
@@ -1479,7 +1542,9 @@
           "contentType",
           "size",
           "resourceId",
-          "kind"
+          "kind",
+          "status",
+          "expiresAt"
         ]
       },
       "Resource": {
@@ -1554,6 +1619,12 @@
           },
           "coverUrl": {
             "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "sourceNotes": {
+            "type": "string"
           }
         },
         "required": [
@@ -1575,7 +1646,9 @@
           "isDemo",
           "status",
           "updatedAt",
-          "coverUrl"
+          "coverUrl",
+          "sourceUrl",
+          "sourceNotes"
         ]
       },
       "ResourceInput": {
@@ -1647,6 +1720,12 @@
           },
           "content": {
             "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "sourceNotes": {
+            "type": "string"
           }
         },
         "required": [
@@ -1707,6 +1786,12 @@
           },
           "useCase": {
             "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "sourceNotes": {
+            "type": "string"
           }
         },
         "required": [
@@ -1717,7 +1802,9 @@
           "preview",
           "content",
           "instructions",
-          "useCase"
+          "useCase",
+          "sourceUrl",
+          "sourceNotes"
         ]
       },
       "ResourceDetail": {
@@ -2594,6 +2681,27 @@
         "required": [
           "assetId",
           "uploadURL"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "error",
+          "code"
         ]
       },
       "AssetConfirm": {

@@ -17,12 +17,12 @@ export function resourceDto(r: ResourceRow, coverUrl = "") {
     tags: r.tags, preview: r.preview, useCase: r.useCase, instructions: r.instructions,
     tutorialUrl: r.tutorialUrl, version: r.version, isFree: r.isFree, featured: r.featured,
     isDemo: r.isDemo, status: r.status as "draft" | "published" | "archived",
-    updatedAt: r.updatedAt.toISOString(), coverUrl };
+     updatedAt: r.updatedAt.toISOString(), coverUrl, sourceUrl: r.sourceUrl, sourceNotes: r.sourceNotes };
 }
 
 export async function resourceAssets(resourceId: string) {
   const rows = await db.select().from(assetsTable).where(and(eq(assetsTable.resourceId, resourceId), eq(assetsTable.status, "confirmed")));
-  return rows.map((a) => ({ id: a.id, name: a.name, contentType: a.contentType, size: a.size, resourceId: a.resourceId, kind: a.kind }));
+  return rows.map((a) => ({ id: a.id, name: a.name, contentType: a.contentType, size: a.size, resourceId: a.resourceId, kind: a.kind, status: a.status, expiresAt: a.expiresAt?.toISOString() ?? null }));
 }
 export async function hasAccess(userId: string, r: ResourceRow): Promise<boolean> {
   // Vault access belongs to the authenticated EcomStack account, not Shopify attribution.

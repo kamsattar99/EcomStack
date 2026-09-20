@@ -26,4 +26,6 @@ export interface ResourceInput {
   status: ResourceInputStatus;
   coverUrl?: string;
   content: string;
+  sourceUrl?: string;
+  sourceNotes?: string;
 }

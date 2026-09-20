@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { 
   useGetAdminResource, 
@@ -6,48 +6,54 @@ import {
   useUpdateResource,
   useListTaxonomies,
   getGetAdminResourceQueryKey,
-  useRequestAssetUpload,
-  useConfirmAsset,
-  useDeleteAsset,
   useImportResourceFromUrl
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { resourceSchema, ResourceFormValues } from "./editor/schema";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Loader2, Save, Trash2, Upload, Wand2 } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronLeft, Loader2, Save, Wand2 } from "lucide-react";
+import { EditorSaveStatus, SaveStatus } from "@/components/admin/EditorSaveStatus";
+import { ResourceDetailsStep } from "@/components/admin/ResourceDetailsStep";
+import { ResourceContentStep } from "@/components/admin/ResourceContentStep";
+import { AssetUploader, LocalUpload } from "@/components/admin/AssetUploader";
+import { ResourcePreviewStep } from "@/components/admin/ResourcePreviewStep";
 
-const resourceSchema = z.object({
-  slug: z.string().min(1, "Slug is required").regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers, and hyphens only"),
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  type: z.enum(["Prompt", "Skill", "Cheat Sheet"]),
-  category: z.string().min(1, "Category is required"),
-  tool: z.string().min(1, "Tool is required"),
-  tags: z.array(z.string()).optional(),
-  preview: z.string().min(1, "Preview is required"),
-  useCase: z.string().optional(),
-  instructions: z.string().optional(),
-  tutorialUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  version: z.string().optional(),
-  isFree: z.boolean(),
-  featured: z.boolean().optional(),
-  isDemo: z.boolean().optional(),
-  status: z.enum(["draft", "published", "archived"]),
-  coverUrl: z.string().optional(),
-  content: z.string().min(1, "Content is required")
-});
+export function getResourceChecklist(values: ResourceFormValues, fileAssetsCount: number, uploadingCount: number) {
+  const checks = [
+    { label: "Title is set", pass: !!values.title.trim() },
+    { label: "Slug is valid", pass: !!values.slug.trim() && /^[a-z0-9-]+$/.test(values.slug) },
+    { label: "Description is provided", pass: !!values.description.trim() },
+    { label: "Category is selected", pass: !!values.category },
+    { label: "Public preview is written", pass: !!values.preview.trim() },
+  ];
+  
+  if (values.type === 'Prompt') {
+    checks.push({ label: "Protected content is written", pass: !!values.content.trim() });
+    checks.push({ label: "Instructions are written", pass: !!values.instructions.trim() });
+  } else if (values.type === 'Skill') {
+    checks.push({ 
+      label: "Content/instructions OR supporting file provided", 
+      pass: (!!values.content.trim() && !!values.instructions.trim()) || fileAssetsCount > 0 
+    });
+  } else if (values.type === 'Cheat Sheet') {
+    checks.push({ 
+      label: "Content OR supporting file provided", 
+      pass: !!values.content.trim() || fileAssetsCount > 0 
+    });
+  }
+  
+  if (uploadingCount > 0) {
+    checks.push({ label: "All uploads are complete", pass: false });
+  }
 
-type ResourceFormValues = z.infer<typeof resourceSchema>;
+  return checks;
+}
 
 export default function AdminResourceEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,92 +67,81 @@ export default function AdminResourceEditorPage() {
   });
   
   const { data: taxonomies } = useListTaxonomies();
-  const categories = taxonomies?.filter(t => t.kind === 'category') || [];
-  const tools = taxonomies?.filter(t => t.kind === 'tool') || [];
+  const categories = useMemo(() => taxonomies?.filter(t => t.kind === 'category') || [], [taxonomies]);
+  const tools = useMemo(() => taxonomies?.filter(t => t.kind === 'tool') || [], [taxonomies]);
   
   const createResource = useCreateResource();
   const updateResource = useUpdateResource();
-  const requestAsset = useRequestAssetUpload();
-  const confirmAsset = useConfirmAsset();
-  const deleteAsset = useDeleteAsset();
   const importResource = useImportResourceFromUrl();
-  const [uploading, setUploading] = useState(false);
   const [importUrl, setImportUrl] = useState("");
+
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const [uploads, setUploads] = useState<LocalUpload[]>([]);
 
   const form = useForm<ResourceFormValues>({
     resolver: zodResolver(resourceSchema),
     defaultValues: {
       slug: "", title: "", description: "", type: "Prompt", category: "", tool: "",
-      tags: [], preview: "", useCase: "", instructions: "", tutorialUrl: "",
+      tags: [], preview: "", useCase: "", instructions: "", tutorialUrl: "", sourceUrl: "", sourceNotes: "",
       version: "1.0", isFree: false, featured: false, isDemo: false,
       status: "draft", coverUrl: "", content: ""
     }
   });
 
   const initializedForId = useRef<string | null>(null);
+  const lastSaved = useRef<string>("");
 
   useEffect(() => {
     if (!isNew && adminResource && initializedForId.current !== id) {
       initializedForId.current = id;
       const r = adminResource.resource;
-      form.reset({
+      const values = {
         slug: r.slug, title: r.title, description: r.description,
         type: r.type, category: r.category, tool: r.tool,
         tags: r.tags || [], preview: r.preview, useCase: r.useCase || "",
         instructions: r.instructions || "", tutorialUrl: r.tutorialUrl || "",
+        sourceUrl: r.sourceUrl || "", sourceNotes: r.sourceNotes || "",
         version: r.version || "", isFree: r.isFree, featured: r.featured || false,
         isDemo: r.isDemo || false, status: r.status, coverUrl: r.coverUrl || "",
         content: adminResource.content || ""
-      });
+      };
+      form.reset(values);
+      lastSaved.current = JSON.stringify(values);
     }
   }, [adminResource, id, isNew, form]);
 
-  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!id || id === 'new' || !e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    
-    setUploading(true);
-    try {
-      const res = await requestAsset.mutateAsync({
-        data: {
-          resourceId: id,
-          name: file.name,
-          size: file.size,
-          contentType: file.type,
-          kind: 'file'
-        }
-      });
-      
-      await fetch(res.uploadURL, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      
-      await confirmAsset.mutateAsync({
-        data: { assetId: res.assetId }
-      });
-      
-      toast({ title: "Asset uploaded successfully" });
-      queryClient.invalidateQueries({ queryKey: getGetAdminResourceQueryKey(id) });
-    } catch (err) {
-      toast({ variant: "destructive", title: "Asset upload failed" });
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
+  const formValues = form.watch();
 
-  const handleAssetDelete = async (assetId: string) => {
-    if (!id) return;
-    try {
-      await deleteAsset.mutateAsync({ id: assetId });
-      toast({ title: "Asset deleted" });
-      queryClient.invalidateQueries({ queryKey: getGetAdminResourceQueryKey(id) });
-    } catch (err) {
-      toast({ variant: "destructive", title: "Failed to delete asset" });
+  // Auto-save logic
+  useEffect(() => {
+    if (isNew || initializedForId.current !== id) return;
+    
+    let handler: ReturnType<typeof setTimeout> | undefined;
+    const currentSerialized = JSON.stringify(formValues);
+    if (currentSerialized !== lastSaved.current) {
+      setSaveStatus('unsaved');
+      handler = setTimeout(() => {
+        setSaveStatus('saving');
+        updateResource.mutate({ id: id!, data: formValues }, {
+          onSuccess: (res) => {
+            setSaveStatus('saved');
+            lastSaved.current = currentSerialized;
+            queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
+              old ? { ...old, resource: res, content: formValues.content } : old
+            );
+          },
+          onError: () => setSaveStatus('failed')
+        });
+      }, 1500);
     }
-  };
+    return () => {
+      if (handler) clearTimeout(handler);
+    };
+  }, [formValues, isNew, id, updateResource, queryClient]);
+
+  const [importDraft, setImportDraft] = useState<any>(null);
+
   const handleImport = () => {
     if (!importUrl.trim()) {
       toast({ variant: "destructive", title: "Paste a public HTTPS link first" });
@@ -154,21 +149,7 @@ export default function AdminResourceEditorPage() {
     }
     importResource.mutate({ data: { url: importUrl.trim() } }, {
       onSuccess: (draft) => {
-        form.reset({
-          ...form.getValues(),
-          title: draft.title,
-          slug: draft.slug,
-          description: draft.description,
-          type: draft.type,
-          category: form.getValues("category") || categories[0]?.name || "",
-          tool: form.getValues("tool") || tools[0]?.name || "",
-          preview: draft.preview,
-          content: draft.content,
-          instructions: draft.instructions,
-          useCase: draft.useCase,
-          status: "draft",
-        });
-        toast({ title: "Draft imported", description: "Review the fields and save when ready." });
+        setImportDraft(draft);
       },
       onError: (error: any) => {
         toast({ variant: "destructive", title: "Import failed", description: error?.data?.error || "Try another public HTTPS page." });
@@ -176,57 +157,201 @@ export default function AdminResourceEditorPage() {
     });
   };
 
-  const onSubmit = (data: ResourceFormValues) => {
-    if (isNew) {
-      createResource.mutate({ data }, {
-        onSuccess: () => {
-          toast({ title: "Resource created successfully" });
-          setLocation("/admin/resources");
-        },
-        onError: () => {
-          toast({ variant: "destructive", title: "Failed to create resource" });
-        }
-      });
-    } else {
-      updateResource.mutate({ id: id!, data }, {
-        onSuccess: (res) => {
-          toast({ title: "Resource updated successfully" });
-          // Update cache locally instead of invalidating
-          queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
-            old ? { ...old, resource: res, content: data.content } : old
-          );
-        },
-        onError: () => {
-          toast({ variant: "destructive", title: "Failed to update resource" });
-        }
-      });
+  const applyImport = () => {
+    if (!importDraft) return;
+    form.reset({
+      ...form.getValues(),
+      title: importDraft.title,
+      slug: importDraft.slug,
+      description: importDraft.description,
+      type: importDraft.type,
+      category: form.getValues("category") || categories[0]?.name || "",
+      tool: form.getValues("tool") || tools[0]?.name || "",
+      preview: importDraft.preview,
+      content: importDraft.content,
+      instructions: importDraft.instructions,
+      useCase: importDraft.useCase,
+      sourceUrl: importDraft.sourceUrl,
+      sourceNotes: importDraft.sourceNotes,
+      status: "draft",
+    });
+    toast({ title: "Draft imported", description: "Review the fields and save when ready." });
+    setImportDraft(null);
+  };
+
+  const ensureCreated = async (): Promise<boolean> => {
+    if (!isNew) return true;
+    
+    // Auto-create draft on first transition
+    try {
+      const data = form.getValues();
+      if (!data.title) {
+        toast({ variant: "destructive", title: "Title required", description: "Give your resource a title before continuing." });
+        return false;
+      }
+      setSaveStatus('saving');
+      const res = await createResource.mutateAsync({ data });
+      toast({ title: "Draft created" });
+      setLocation(`/admin/resources/${res.resource.id}`, { replace: true });
+      return true;
+    } catch (err) {
+      setSaveStatus('failed');
+      toast({ variant: "destructive", title: "Failed to create draft" });
+      return false;
     }
   };
 
-  if (!isNew && isLoadingResource) return <div className="p-8">Loading editor...</div>;
+  const handleNextStep = async () => {
+    if (currentStep === 1) {
+      const created = await ensureCreated();
+      if (created) setCurrentStep(2);
+    } else if (currentStep === 2) {
+      setCurrentStep(3);
+    }
+  };
 
-  const isSaving = createResource.isPending || updateResource.isPending;
+  const handlePublish = async () => {
+    const created = await ensureCreated();
+    if (!created) return;
+
+    const data = form.getValues();
+    const isPublishing = data.status !== 'published';
+    
+    // Need explicit manual save trigger for Publish click
+    setSaveStatus('saving');
+    updateResource.mutate({ id: id!, data: { ...data, status: 'published' } }, {
+      onSuccess: (res) => {
+        form.setValue('status', 'published');
+        lastSaved.current = JSON.stringify(form.getValues());
+        setSaveStatus('saved');
+        toast({ title: isPublishing ? "Resource Published" : "Changes published" });
+        queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
+          old ? { ...old, resource: res, content: data.content } : old
+        );
+      },
+      onError: () => {
+        setSaveStatus('failed');
+        toast({ variant: "destructive", title: "Failed to publish" });
+      }
+    });
+  };
+
+  if (!isNew && isLoadingResource) return (
+    <div className="p-8 flex items-center justify-center min-h-[50vh]">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+
+  const fileAssetsCount = adminResource?.assets?.filter(a => a.kind === 'file').length || 0;
+  const uploadingCount = uploads.filter(u => u.status === 'uploading' || u.status === 'validating' || u.status === 'failed').length;
+  const checks = getResourceChecklist(formValues, fileAssetsCount, uploadingCount);
+  const readyToPublish = checks.every(c => c.pass);
+
+  const handleSaveDraft = async () => {
+    const created = await ensureCreated();
+    if (!created) return;
+
+    const data = form.getValues();
+    setSaveStatus('saving');
+    updateResource.mutate({ id: id!, data: { ...data, status: 'draft' } }, {
+      onSuccess: (res) => {
+        form.setValue('status', 'draft');
+        lastSaved.current = JSON.stringify(form.getValues());
+        setSaveStatus('saved');
+        toast({ title: "Draft Saved" });
+        queryClient.setQueryData(getGetAdminResourceQueryKey(id!), (old: any) => 
+          old ? { ...old, resource: res, content: data.content } : old
+        );
+      },
+      onError: () => {
+        setSaveStatus('failed');
+        toast({ variant: "destructive", title: "Failed to save draft" });
+      }
+    });
+  };
+
+  const steps = [
+    { num: 1, label: "Details" },
+    { num: 2, label: "Content & files" },
+    { num: 3, label: "Preview & publish" }
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center">
-          <Button asChild variant="ghost" size="icon" className="mr-4 rounded-full">
+        <div className="flex items-center gap-4">
+          <Button asChild variant="ghost" size="icon" className="rounded-full shrink-0">
             <Link href="/admin/resources"><ChevronLeft className="h-5 w-5" /></Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-serif font-medium">{isNew ? "Create Resource" : "Edit Resource"}</h1>
-            <p className="text-muted-foreground mt-1">{isNew ? "Add a new prompt, skill, or cheat sheet." : "Update existing content."}</p>
+            <h1 className="text-3xl font-serif font-medium leading-tight">
+              {isNew ? "Create Resource" : adminResource?.resource.title || "Edit Resource"}
+            </h1>
+            <div className="flex gap-2 items-center mt-1">
+              <p className="text-muted-foreground text-sm">
+                {formValues.status === 'published' ? (
+                  <span className="text-green-700 font-medium">Published</span>
+                ) : (
+                  <span className="text-amber-700 font-medium capitalize">{formValues.status}</span>
+                )}
+              </p>
+              <span className="text-muted-foreground text-sm px-2">•</span>
+              <EditorSaveStatus status={saveStatus} />
+            </div>
           </div>
         </div>
+        
+        <div className="flex items-center gap-3">
+          <Button type="button" variant="outline" onClick={() => setLocation("/admin/resources")}>
+            Close
+          </Button>
+          {currentStep < 3 ? (
+            <Button type="button" onClick={handleNextStep}>
+              Next Step
+            </Button>
+          ) : (
+            <>
+              <Button type="button" variant="outline" onClick={handleSaveDraft} disabled={saveStatus === 'saving' || (formValues.status === 'draft' && saveStatus !== 'unsaved')} data-testid="button-save-draft">
+                Save Draft
+              </Button>
+              <Button 
+                type="button" 
+                onClick={handlePublish}
+                disabled={!readyToPublish || saveStatus === 'saving' || (formValues.status === 'published' && saveStatus !== 'unsaved')}
+                data-testid="button-publish"
+              >
+                {saveStatus === 'saving' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {formValues.status === 'published' ? (saveStatus === 'unsaved' ? "Update Published" : "Published") : "Publish Resource"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
-      {isNew && (
-        <Card className="mb-8 border-[#cbdacb] bg-[#f6faf5]">
+
+      <div className="flex gap-2 mb-8 border-b border-border pb-4">
+        {steps.map((s) => (
+          <button 
+            key={s.num}
+            onClick={() => setCurrentStep(s.num as 1 | 2 | 3)}
+            disabled={isNew && s.num > 1}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              currentStep === s.num 
+                ? 'bg-primary text-primary-foreground' 
+                : 'text-muted-foreground hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed'
+            }`}
+          >
+            {s.num}. {s.label}
+          </button>
+        ))}
+      </div>
+
+      {isNew && currentStep === 1 && (
+        <Card className="mb-8 border-[#cbdacb] bg-[#f6faf5] animate-in fade-in duration-300">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-lg"><Wand2 className="h-5 w-5 text-[#2F765F]" />Import from a link</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="mb-4 text-sm text-muted-foreground">Paste a public HTTPS page to create a draft from its title, description, and readable content. Review it before saving or publishing.</p>
+            <p className="mb-4 text-sm text-muted-foreground">Paste a public HTTPS page to create a draft from its title, description, and readable content.</p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Input value={importUrl} onChange={(event) => setImportUrl(event.target.value)} type="url" placeholder="https://example.com/resource" className="bg-white" />
               <Button type="button" onClick={handleImport} disabled={importResource.isPending} className="shrink-0">
@@ -234,262 +359,64 @@ export default function AdminResourceEditorPage() {
                 Import draft
               </Button>
             </div>
+
+            {importDraft && (
+              <div className="mt-6 p-4 border border-primary/20 bg-white rounded-xl">
+                <h4 className="font-medium mb-3">Found Resource</h4>
+                <div className="space-y-2 mb-4 text-sm">
+                  <p><strong>Title:</strong> {importDraft.title}</p>
+                  <p><strong>Description:</strong> {importDraft.description}</p>
+                  <p><strong>Type:</strong> {importDraft.type}</p>
+                </div>
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline" size="sm" onClick={() => setImportDraft(null)}>Discard</Button>
+                  <Button size="sm" onClick={applyImport}>Apply to Draft</Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-muted border border-border">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-              <TabsTrigger value="assets" disabled={isNew}>Assets (Uploads)</TabsTrigger>
-            </TabsList>
-            
-            <div className="mt-6 bg-card border border-border rounded-xl shadow-sm overflow-hidden">
-              <TabsContent value="basic" className="m-0 p-6 space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="title" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl><Input {...field} className="bg-white" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="slug" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL Slug</FormLabel>
-                      <FormControl><Input {...field} className="bg-white" placeholder="my-awesome-prompt" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-                
-                <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Short Description</FormLabel>
-                    <FormControl><Textarea {...field} className="resize-none h-20 bg-white" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-
-                <div className="grid md:grid-cols-3 gap-6">
-                  <FormField control={form.control} name="type" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger className="bg-white"><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="Prompt">Prompt</SelectItem>
-                          <SelectItem value="Skill">Skill</SelectItem>
-                          <SelectItem value="Cheat Sheet">Cheat Sheet</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  
-                  <FormField control={form.control} name="category" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger className="bg-white"><SelectValue placeholder="Select..." /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {categories.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  
-                  <FormField control={form.control} name="tool" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tool</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger className="bg-white"><SelectValue placeholder="Select..." /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {tools.map(t => <SelectItem key={t.id} value={t.name}>{t.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-              </TabsContent>
+        <div className="pb-24">
+          {currentStep === 1 && (
+            <ResourceDetailsStep 
+              form={form} 
+              categories={categories} 
+              tools={tools} 
+              isNew={isNew} 
+            />
+          )}
+          
+          {currentStep === 2 && (
+            <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <ResourceContentStep form={form} />
               
-              <TabsContent value="content" className="m-0 p-6 space-y-6">
-                <FormField control={form.control} name="preview" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Public Preview (Markdown)</FormLabel>
-                    <FormDescription>What users see before unlocking.</FormDescription>
-                    <FormControl><Textarea {...field} className="font-mono text-sm h-32 bg-white" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                
-                <FormField control={form.control} name="content" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Protected Content (Markdown)</FormLabel>
-                    <FormDescription>The main prompt or skill payload.</FormDescription>
-                    <FormControl><Textarea {...field} className="font-mono text-sm h-64 bg-white" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                
-                <FormField control={form.control} name="instructions" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Instructions (Markdown)</FormLabel>
-                    <FormControl><Textarea {...field} className="font-mono text-sm h-32 bg-white" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                
-                <FormField control={form.control} name="useCase" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Use Case (Markdown)</FormLabel>
-                    <FormControl><Textarea {...field} className="font-mono text-sm h-24 bg-white" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </TabsContent>
-
-              <TabsContent value="settings" className="m-0 p-6 space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="status" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Publish Status</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl><SelectTrigger className="bg-white"><SelectValue /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="published">Published</SelectItem>
-                          <SelectItem value="archived">Archived</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  
-                  <FormField control={form.control} name="version" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Version</FormLabel>
-                      <FormControl><Input {...field} className="bg-white" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="tutorialUrl" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tutorial Video URL</FormLabel>
-                      <FormControl><Input {...field} type="url" className="bg-white" placeholder="https://youtube.com/..." /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="coverUrl" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cover Image URL (Public)</FormLabel>
-                      <FormControl><Input {...field} type="url" className="bg-white" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-border">
-                  <FormField control={form.control} name="isFree" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4 bg-white">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Free Resource</FormLabel>
-                        <FormDescription>Available without unlock.</FormDescription>
-                      </div>
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    </FormItem>
-                  )} />
-                  
-                  <FormField control={form.control} name="isDemo" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4 bg-white">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Demo Content</FormLabel>
-                        <FormDescription>Shown in dev only.</FormDescription>
-                      </div>
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    </FormItem>
-                  )} />
-                  
-                  <FormField control={form.control} name="featured" render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4 bg-white">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Featured</FormLabel>
-                        <FormDescription>Highlight on landing.</FormDescription>
-                      </div>
-                      <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                    </FormItem>
-                  )} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="assets" className="m-0 p-6">
-                 {isNew ? (
-                   <p className="text-center text-muted-foreground my-8">
-                     Save the resource first before uploading assets.
-                   </p>
-                 ) : (
-                   <div className="space-y-6">
-                     <div className="border border-dashed border-border rounded-xl p-8 text-center bg-secondary/30">
-                       <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-                       <h3 className="font-medium mb-2">Upload Asset</h3>
-                       <p className="text-sm text-muted-foreground mb-4">Add downloadable files, cheat sheets or templates.</p>
-                       <div className="relative inline-block">
-                          <Button type="button" disabled={uploading}>
-                           {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Select File"}
-                         </Button>
-                         <input 
-                           type="file" 
-                            accept=".md,.zip,.pdf,.png,.jpg,.jpeg,.webp,text/markdown,text/plain,application/zip,application/pdf,image/png,image/jpeg,image/webp"
-                           onChange={handleAssetUpload}
-                           disabled={uploading}
-                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
-                         />
-                       </div>
-                     </div>
-                     
-                     <div className="space-y-3">
-                       <h4 className="font-medium">Attached Assets</h4>
-                       {adminResource?.assets?.length ? (
-                         <div className="space-y-2">
-                           {adminResource.assets.map(a => (
-                             <div key={a.id} className="border border-border p-3 rounded-lg flex justify-between items-center bg-white">
-                               <div>
-                                 <p className="font-medium text-sm">{a.name}</p>
-                                 <p className="text-xs text-muted-foreground">{(a.size / 1024 / 1024).toFixed(2)} MB • {a.contentType}</p>
-                               </div>
-                               <Button variant="ghost" size="sm" type="button" onClick={() => handleAssetDelete(a.id)}>
-                                 <Trash2 className="h-4 w-4 text-destructive" />
-                               </Button>
-                             </div>
-                           ))}
-                         </div>
-                       ) : (
-                         <p className="text-sm text-muted-foreground">No assets uploaded yet.</p>
-                       )}
-                     </div>
-                   </div>
-                 )}
-              </TabsContent>
+              <div className="pt-8 border-t border-border">
+                <h3 className="font-serif text-2xl mb-6">Files & Assets</h3>
+                {id && !isNew ? (
+                  <AssetUploader 
+                    resourceId={id} 
+                    assets={adminResource?.assets || []} 
+                    uploads={uploads}
+                    setUploads={setUploads}
+                    onAssetsChanged={() => queryClient.invalidateQueries({ queryKey: getGetAdminResourceQueryKey(id) })}
+                    onImportContent={(text) => {
+                      form.setValue('content', text, { shouldValidate: true, shouldDirty: true });
+                    }}
+                  />
+                ) : (
+                  <p className="text-muted-foreground text-sm">Save the draft before uploading files.</p>
+                )}
+              </div>
             </div>
-          </Tabs>
-
-          <div className="flex justify-end pt-4">
-            <Button type="button" variant="outline" className="mr-4 rounded-full" onClick={() => setLocation("/admin/resources")}>Cancel</Button>
-            <Button type="submit" className="rounded-full shadow-sm" disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {isNew ? "Create Resource" : "Save Changes"}
-            </Button>
-          </div>
-        </form>
+          )}
+          
+          {currentStep === 3 && (
+            <ResourcePreviewStep form={form} assets={adminResource?.assets || []} checks={checks} />
+          )}
+        </div>
       </Form>
     </div>
   );

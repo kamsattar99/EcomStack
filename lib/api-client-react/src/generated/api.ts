@@ -28,6 +28,7 @@ import type {
   BookmarkInput,
   ClaimInput,
   ClaimResult,
+  ErrorResponse,
   GrantInput,
   HealthStatus,
   ImportedResourceDraft,
@@ -1409,7 +1410,7 @@ return customFetch<AdminResource>(getCreateResourceUrl(),
 
 export const getCreateResourceMutationKey = () => ['createResource'] as const;
 
-export const getCreateResourceMutationOptions = <TError = ErrorType<void>,
+export const getCreateResourceMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createResource>>, TError,CreateResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createResource>>, TError,CreateResourceMutationVariables, TContext> => {
 
@@ -1438,10 +1439,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CreateResourceMutationResult = NonNullable<Awaited<ReturnType<typeof createResource>>>
     export type CreateResourceMutationBody = BodyType<ResourceInput>
-    export type CreateResourceMutationError = ErrorType<void>
+    export type CreateResourceMutationError = ErrorType<ErrorResponse | void>
     export type CreateResourceMutationVariables = {data: BodyType<ResourceInput>}
 
-    export const useCreateResource = <TError = ErrorType<void>,
+    export const useCreateResource = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createResource>>, TError,CreateResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof createResource>>,
@@ -1645,7 +1646,7 @@ return customFetch<AdminResource>(getUpdateResourceUrl(id),
 
 export const getUpdateResourceMutationKey = () => ['updateResource'] as const;
 
-export const getUpdateResourceMutationOptions = <TError = ErrorType<void>,
+export const getUpdateResourceMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateResource>>, TError,UpdateResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateResource>>, TError,UpdateResourceMutationVariables, TContext> => {
 
@@ -1674,10 +1675,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UpdateResourceMutationResult = NonNullable<Awaited<ReturnType<typeof updateResource>>>
     export type UpdateResourceMutationBody = BodyType<ResourceInput>
-    export type UpdateResourceMutationError = ErrorType<void>
+    export type UpdateResourceMutationError = ErrorType<ErrorResponse | void>
     export type UpdateResourceMutationVariables = {id: string;data: BodyType<ResourceInput>}
 
-    export const useUpdateResource = <TError = ErrorType<void>,
+    export const useUpdateResource = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateResource>>, TError,UpdateResourceMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof updateResource>>,
@@ -2698,7 +2699,7 @@ return customFetch<UploadResult>(getRequestAssetUploadUrl(),
 
 export const getRequestAssetUploadMutationKey = () => ['requestAssetUpload'] as const;
 
-export const getRequestAssetUploadMutationOptions = <TError = ErrorType<void>,
+export const getRequestAssetUploadMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestAssetUpload>>, TError,RequestAssetUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof requestAssetUpload>>, TError,RequestAssetUploadMutationVariables, TContext> => {
 
@@ -2727,10 +2728,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type RequestAssetUploadMutationResult = NonNullable<Awaited<ReturnType<typeof requestAssetUpload>>>
     export type RequestAssetUploadMutationBody = BodyType<UploadInput>
-    export type RequestAssetUploadMutationError = ErrorType<void>
+    export type RequestAssetUploadMutationError = ErrorType<ErrorResponse | void>
     export type RequestAssetUploadMutationVariables = {data: BodyType<UploadInput>}
 
-    export const useRequestAssetUpload = <TError = ErrorType<void>,
+    export const useRequestAssetUpload = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestAssetUpload>>, TError,RequestAssetUploadMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof requestAssetUpload>>,
@@ -2780,7 +2781,7 @@ return customFetch<Asset>(getConfirmAssetUrl(),
 
 export const getConfirmAssetMutationKey = () => ['confirmAsset'] as const;
 
-export const getConfirmAssetMutationOptions = <TError = ErrorType<void>,
+export const getConfirmAssetMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmAsset>>, TError,ConfirmAssetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof confirmAsset>>, TError,ConfirmAssetMutationVariables, TContext> => {
 
@@ -2809,10 +2810,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type ConfirmAssetMutationResult = NonNullable<Awaited<ReturnType<typeof confirmAsset>>>
     export type ConfirmAssetMutationBody = BodyType<AssetConfirm>
-    export type ConfirmAssetMutationError = ErrorType<void>
+    export type ConfirmAssetMutationError = ErrorType<ErrorResponse | void>
     export type ConfirmAssetMutationVariables = {data: BodyType<AssetConfirm>}
 
-    export const useConfirmAsset = <TError = ErrorType<void>,
+    export const useConfirmAsset = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmAsset>>, TError,ConfirmAssetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof confirmAsset>>,
@@ -2848,7 +2849,7 @@ export const deleteAsset = async (id: string, options?: Parameters<typeof custom
 
 export const getDeleteAssetMutationKey = () => ['deleteAsset'] as const;
 
-export const getDeleteAssetMutationOptions = <TError = ErrorType<void>,
+export const getDeleteAssetMutationOptions = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAsset>>, TError,DeleteAssetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteAsset>>, TError,DeleteAssetMutationVariables, TContext> => {
 
@@ -2877,10 +2878,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type DeleteAssetMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAsset>>>
 
-    export type DeleteAssetMutationError = ErrorType<void>
+    export type DeleteAssetMutationError = ErrorType<ErrorResponse | void>
     export type DeleteAssetMutationVariables = {id: string}
 
-    export const useDeleteAsset = <TError = ErrorType<void>,
+    export const useDeleteAsset = <TError = ErrorType<ErrorResponse | void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAsset>>, TError,DeleteAssetMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteAsset>>,

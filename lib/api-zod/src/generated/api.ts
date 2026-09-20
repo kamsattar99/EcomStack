@@ -55,7 +55,9 @@ export const ListResourcesResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 })),
   "total": zod.number(),
   "taxonomies": zod.array(zod.object({
@@ -90,7 +92,9 @@ export const GetResourceResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 }),
   "related": zod.array(zod.object({
   "id": zod.string(),
@@ -111,7 +115,9 @@ export const GetResourceResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 })),
   "canAccess": zod.boolean(),
   "saved": zod.boolean()
@@ -131,7 +137,9 @@ export const GetResourceContentResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number(),
   "resourceId": zod.string(),
-  "kind": zod.string()
+  "kind": zod.string(),
+  "status": zod.string(),
+  "expiresAt": zod.coerce.date().nullable()
 }))
 })
 
@@ -193,7 +201,9 @@ export const GetMemberResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 })),
   "recentResources": zod.array(zod.object({
   "id": zod.string(),
@@ -214,7 +224,9 @@ export const GetMemberResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 }))
 })
 
@@ -328,7 +340,9 @@ export const ListAdminResourcesResponseItem = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 })
 export const ListAdminResourcesResponse = zod.array(ListAdminResourcesResponseItem)
 
@@ -351,7 +365,9 @@ export const CreateResourceBody = zod.object({
   "isDemo": zod.boolean().optional(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "coverUrl": zod.string().optional(),
-  "content": zod.string()
+  "content": zod.string(),
+  "sourceUrl": zod.string().optional(),
+  "sourceNotes": zod.string().optional()
 })
 
 export const CreateResourceResponse = zod.object({
@@ -374,7 +390,9 @@ export const CreateResourceResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 }),
   "content": zod.string(),
   "assets": zod.array(zod.object({
@@ -383,7 +401,9 @@ export const CreateResourceResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number(),
   "resourceId": zod.string(),
-  "kind": zod.string()
+  "kind": zod.string(),
+  "status": zod.string(),
+  "expiresAt": zod.coerce.date().nullable()
 }))
 })
 
@@ -405,7 +425,9 @@ export const ImportResourceFromUrlResponse = zod.object({
   "preview": zod.string(),
   "content": zod.string(),
   "instructions": zod.string(),
-  "useCase": zod.string()
+  "useCase": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 })
 
 
@@ -433,7 +455,9 @@ export const GetAdminResourceResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 }),
   "content": zod.string(),
   "assets": zod.array(zod.object({
@@ -442,7 +466,9 @@ export const GetAdminResourceResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number(),
   "resourceId": zod.string(),
-  "kind": zod.string()
+  "kind": zod.string(),
+  "status": zod.string(),
+  "expiresAt": zod.coerce.date().nullable()
 }))
 })
 
@@ -469,7 +495,9 @@ export const UpdateResourceBody = zod.object({
   "isDemo": zod.boolean().optional(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "coverUrl": zod.string().optional(),
-  "content": zod.string()
+  "content": zod.string(),
+  "sourceUrl": zod.string().optional(),
+  "sourceNotes": zod.string().optional()
 })
 
 export const UpdateResourceResponse = zod.object({
@@ -492,7 +520,9 @@ export const UpdateResourceResponse = zod.object({
   "isDemo": zod.boolean(),
   "status": zod.enum(['draft', 'published', 'archived']),
   "updatedAt": zod.string(),
-  "coverUrl": zod.string()
+  "coverUrl": zod.string(),
+  "sourceUrl": zod.string(),
+  "sourceNotes": zod.string()
 }),
   "content": zod.string(),
   "assets": zod.array(zod.object({
@@ -501,7 +531,9 @@ export const UpdateResourceResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number(),
   "resourceId": zod.string(),
-  "kind": zod.string()
+  "kind": zod.string(),
+  "status": zod.string(),
+  "expiresAt": zod.coerce.date().nullable()
 }))
 })
 
@@ -762,7 +794,9 @@ export const ConfirmAssetResponse = zod.object({
   "contentType": zod.string(),
   "size": zod.number(),
   "resourceId": zod.string(),
-  "kind": zod.string()
+  "kind": zod.string(),
+  "status": zod.string(),
+  "expiresAt": zod.coerce.date().nullable()
 })
 
 

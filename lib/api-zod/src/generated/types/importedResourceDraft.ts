@@ -15,4 +15,6 @@ export interface ImportedResourceDraft {
   content: string;
   instructions: string;
   useCase: string;
+  sourceUrl: string;
+  sourceNotes: string;
 }

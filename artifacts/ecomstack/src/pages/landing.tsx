@@ -2,6 +2,9 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useGetSite } from "@workspace/api-client-react";
 import { ArrowRight, Check, MessageCircle, Sparkles, Youtube } from "lucide-react";
+import { TbBrandOpenai } from "react-icons/tb";
+import { SiAnthropic, SiGooglegemini } from "react-icons/si";
+import { FaXTwitter } from "react-icons/fa6";
 import { PageMeta } from "@/components/page-meta";
 
 type ResourceKind = "prompts" | "skills" | "cheats";
@@ -100,6 +103,15 @@ export default function LandingPage() {
                   Create free account <ArrowRight className="landing-arrow ml-2 h-5 w-5" />
                 </Link>
               </Button>
+              <div className="landing-platforms mt-5 w-full max-w-[610px] border-t border-[#dbe6dc] pt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#718178] sm:text-[11px]">Run skills &amp; prompts on every AI platform that matters</p>
+                <ul aria-label="Supported AI platforms" className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[#41574d] sm:gap-x-7">
+                  <li className="inline-flex items-center gap-1.5 text-sm font-semibold"><TbBrandOpenai aria-hidden="true" className="h-5 w-5" />ChatGPT</li>
+                  <li className="inline-flex items-center gap-1.5 text-sm font-semibold"><SiAnthropic aria-hidden="true" className="h-[18px] w-[18px]" />Claude</li>
+                  <li className="inline-flex items-center gap-1.5 text-sm font-semibold"><SiGooglegemini aria-hidden="true" className="h-5 w-5" />Gemini</li>
+                  <li className="inline-flex items-center gap-1.5 text-sm font-semibold"><FaXTwitter aria-hidden="true" className="h-4 w-4" />Grok</li>
+                </ul>
+              </div>
               <p className="mt-4 text-sm text-[#6b7d74]">Your next useful resource starts here.</p>
             </div>
             <div aria-hidden="true" className="mt-4 flex items-center justify-between px-1 lg:hidden">
@@ -148,9 +160,10 @@ export default function LandingPage() {
         .landing-card-1 { animation-delay: .12s; } .landing-card-2 { animation-delay: .2s; } .landing-card-3 { animation-delay: .28s; }
         .landing-card:hover { transform: translateY(-6px); box-shadow: 0 20px 36px rgba(25,60,54,.12); }
         .landing-cta:focus-visible { outline: 3px solid #2F765F; outline-offset: 4px; } .landing-cta:hover .landing-arrow { transform: translateX(4px); } .landing-arrow { transition: transform .2s ease; }
+        .landing-platforms { animation: landing-rise .65s cubic-bezier(.22, .8, .26, 1) .36s both; }
         @keyframes landing-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes landing-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @media (prefers-reduced-motion: reduce) { .landing-enter, .landing-card, .landing-float-one, .landing-float-two, .landing-float-three, .landing-float-four { animation: none !important; } .landing-card, .landing-cta, .landing-arrow, .creator-profile { transition: none !important; } }
+        @media (prefers-reduced-motion: reduce) { .landing-enter, .landing-card, .landing-platforms, .landing-float-one, .landing-float-two, .landing-float-three, .landing-float-four { animation: none !important; } .landing-card, .landing-cta, .landing-arrow, .creator-profile { transition: none !important; } }
       `}</style>
     </div>
   );

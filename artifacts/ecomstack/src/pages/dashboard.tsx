@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { PageMeta } from "@/components/page-meta";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@clerk/react";
+import { MentoringWidget } from "@/components/mentoring-widget";
 
 const SHOPIFY_AFFILIATE_URL = "https://shopify.pxf.io/the-ecom-king";
 
@@ -162,6 +163,7 @@ export default function DashboardPage() {
 
         <aside className="space-y-5">
           {showShopifyCard && <section className="relative overflow-hidden rounded-2xl border border-[#cfe0d1] bg-[#E8F1E6] p-5 shadow-[0_10px_20px_rgba(25,60,54,.06)]"><button onClick={handleDismissShopifyCard} className="absolute right-3 top-3 rounded-full p-1 text-[#63766c] hover:bg-white/60 hover:text-[#193C36]" aria-label="Dismiss Shopify recommendation"><X className="h-4 w-4" /></button><Store className="h-6 w-6 text-[#2F765F]" /><h2 className="mt-4 font-serif text-2xl leading-tight text-[#193C36]">Starting a new Shopify store?</h2><p className="mt-3 text-sm leading-6 text-[#52675c]">Use Kamil’s link to get started and support EcomStack.</p><Button asChild className="mt-5 h-auto w-full whitespace-normal bg-[#193C36] py-3 text-left leading-5 text-white hover:bg-[#2F765F]"><a href={SHOPIFY_AFFILIATE_URL} target="_blank" rel="sponsored noopener noreferrer"><ExternalLink className="mr-2 h-4 w-4 shrink-0" />Start Shopify through my link ↗</a></Button><p className="mt-3 text-xs leading-5 text-[#65776e]">We may earn a commission if you sign up through this link.</p></section>}
+          <MentoringWidget />
           <section className="rounded-2xl border border-[#dce7dd] bg-white p-5"><h2 className="font-serif text-xl text-[#193C36]">Keep moving</h2><div className="mt-3 space-y-1"><Link href="/library" className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-[#52675c] hover:bg-[#E8F1E6] hover:text-[#193C36]">Search the Vault <ArrowRight className="h-4 w-4" /></Link><Link href="/support" className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-medium text-[#52675c] hover:bg-[#E8F1E6] hover:text-[#193C36]">Get support <ArrowRight className="h-4 w-4" /></Link>{member.resumeSlug && <Link href={`/resources/${member.resumeSlug}`} className="flex items-center justify-between rounded-lg px-2 py-2 text-sm font-semibold text-[#193C36] hover:bg-[#E8F1E6]">Resume your last resource <ArrowRight className="h-4 w-4" /></Link>}</div></section>
         </aside>
       </div>

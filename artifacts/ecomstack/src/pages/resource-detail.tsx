@@ -12,6 +12,7 @@ import { useUser } from "@clerk/react";
 import { PageMeta } from "@/components/page-meta";
 import { LinkedResource, TutorialVideo } from "@/components/resource-external-media";
 import { ShareResourceButton } from "@/components/share-resource-button";
+import { MentoringWidget } from "@/components/mentoring-widget";
 
 function ResourceIllustration({ type }: { type: string }) {
   const Icon = type === "Prompt" ? MessageCircle : type === "Skill" ? Blocks : ClipboardCheck;
@@ -152,6 +153,7 @@ export default function ResourceDetailPage() {
             <h2 className="mt-6 font-serif text-xl text-[#193C36]">Details</h2><dl className="mt-4 divide-y divide-[#e6ede6] text-sm"><div className="flex justify-between gap-4 py-3"><dt className="text-[#65776e]">Tool</dt><dd className="text-right font-semibold text-[#26382f]">{resource.tool}</dd></div><div className="flex justify-between gap-4 py-3"><dt className="text-[#65776e]">Format</dt><dd className="text-right font-semibold text-[#26382f]">{resource.type}</dd></div><div className="flex justify-between gap-4 py-3"><dt className="text-[#65776e]">Category</dt><dd className="text-right font-semibold text-[#26382f]">{resource.category}</dd></div><div className="flex justify-between gap-4 py-3"><dt className="text-[#65776e]">Updated</dt><dd className="text-right font-semibold text-[#26382f]">{new Date(resource.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</dd></div><div className="flex justify-between gap-4 py-3"><dt className="text-[#65776e]">Version</dt><dd className="text-right font-semibold text-[#26382f]">{resource.version}</dd></div></dl>
             {resource.tags?.length ? <div className="mt-5 border-t border-[#e6ede6] pt-5"><h3 className="text-xs font-bold tracking-[.14em] text-[#65776e]">TAGS</h3><div className="mt-3 flex flex-wrap gap-2">{resource.tags.map((tag) => <span key={tag} className="rounded-md bg-[#E8F1E6] px-2 py-1 text-xs font-medium text-[#2F765F]">{tag}</span>)}</div></div> : null}
           </section>
+          <MentoringWidget />
           {related?.length ? <section><h2 className="font-serif text-xl text-[#193C36]">Related resources</h2><div className="mt-3 space-y-2">{related.slice(0, 3).map((rel) => { const Icon = relatedIcon(rel.type); return <Link key={rel.id} href={`/resources/${rel.slug}`} className="group flex items-center gap-3 rounded-xl border border-[#dce7dd] bg-white p-3 transition hover:border-[#a8c3ae] hover:shadow-sm"><div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#E8F1E6] text-[#2F765F]"><Icon className="h-5 w-5" strokeWidth={1.6} /></div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-[#26382f] group-hover:text-[#2F765F]">{rel.title}</p><p className="mt-1 text-xs text-[#65776e]">{rel.type}</p></div><ArrowRight className="h-4 w-4 text-[#6c8176] transition-transform group-hover:translate-x-1" /></Link>; })}</div></section> : null}
         </aside>
       </div>

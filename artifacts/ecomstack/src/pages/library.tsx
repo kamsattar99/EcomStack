@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
 import { PageMeta } from "@/components/page-meta";
+import { ShareResourceButton } from "@/components/share-resource-button";
 
 function useQueryParams() {
   const [location] = useLocation();
@@ -155,8 +156,8 @@ export default function LibraryPage() {
           ) : library?.resources && library.resources.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {library.resources.map((resource) => (
-                <Link key={resource.id} href={`/resources/${resource.slug}?from=${encodeURIComponent(returnPath)}`}>
-                  <div className="group flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-all hover:border-primary/30 active-elevate-2 cursor-pointer">
+                <article key={resource.id} className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-primary/30 hover:shadow-md active-elevate-2">
+                  <Link href={`/resources/${resource.slug}?from=${encodeURIComponent(returnPath)}`} className="flex flex-1 flex-col">
                     <div className="aspect-[16/9] relative bg-secondary overflow-hidden">
                       {resource.coverUrl ? (
                          <img src={resource.coverUrl} alt={resource.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
@@ -180,7 +181,7 @@ export default function LibraryPage() {
                       )}
                     </div>
                     
-                    <div className="p-5 flex flex-col flex-1">
+                    <div className="flex flex-1 flex-col p-5">
                       <div className="flex flex-wrap gap-2 mb-3">
                         <Badge variant="outline" className="bg-background text-xs font-medium">
                           {resource.type}
@@ -206,8 +207,11 @@ export default function LibraryPage() {
                         <span>{resource.version}</span>
                       </div>
                     </div>
+                  </Link>
+                  <div className="border-t border-border px-5 py-3">
+                    <ShareResourceButton slug={resource.slug} title={resource.title} description={resource.description} className="h-8 w-full border-primary/20 text-primary hover:bg-primary/5" />
                   </div>
-                </Link>
+                </article>
               ))}
             </div>
           ) : (

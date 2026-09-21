@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
+import { SkillFileImport } from "@/components/admin/SkillFileImport";
 
 interface Props {
   form: UseFormReturn<ResourceFormValues>;
@@ -19,6 +20,7 @@ interface Props {
 export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
   const title = form.watch("title");
   const slug = form.watch("slug");
+  const type = form.watch("type");
   const [slugEdited, setSlugEdited] = useState(false);
 
   // Auto-generate slug from title for new resources if not manually edited
@@ -33,6 +35,7 @@ export function ResourceDetailsStep({ form, categories, tools, isNew }: Props) {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {isNew && type === "Skill" ? <SkillFileImport form={form} categories={categories} tools={tools} /> : null}
       <div className="grid gap-6">
         <FormField control={form.control} name="title" render={({ field }) => (
           <FormItem>

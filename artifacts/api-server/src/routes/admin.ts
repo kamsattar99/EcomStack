@@ -69,6 +69,11 @@ function metaValue(html: string, keys: string[]): string {
 function slugify(value: string): string {
   return value.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || "imported-resource";
 }
+function csvCell(value: string | number | boolean | Date | null | undefined): string {
+  let text = value instanceof Date ? value.toISOString() : String(value ?? "");
+  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, "\"\"")}"`;
+}
 async function readPage(response: Response): Promise<string> {
   const advertisedLength = Number(response.headers.get("content-length") ?? 0);
   if (advertisedLength > 1_000_000) throw new Error("That page is too large to import");
@@ -99,6 +104,19 @@ router.get("/admin/overview", async (_req, res): Promise<void> => {
     count(activityTable as never, eq(activityTable.action, "download") as never), count(resourcesTable as never), count(supportTable as never, eq(supportTable.status, "open") as never),
   ]);
   res.json(GetAdminOverviewResponse.parse({ registeredUsers, signupClicks, onboardingCompletions, verifiedPaidTrials: verified, accountsWithAccess: registeredUsers, resourceCopies: copies, resourceDownloads: downloads, resources, openSupportRequests: open, audit: audits.map((a) => ({ id: a.id, actorId: a.actorId, action: a.action, reason: a.reason, createdAt: a.createdAt.toISOString() })) }));
+});
+router.get("/admin/users/export", async (req, res): Promise<void> => {
+  const users = await db.select().from(usersTable).orderBy(desc(usersTable.createdAt));
+  const rows = [
+    ["Member ID", "Full name", "Email address", "Phone country code", "Phone number", "Marketing opt-in", "Marketing opted in at", "Shopify signup confirmed at", "Registered at", "Last updated at", "Role"],
+    ...users.map((user) => [
+      user.clerkId, user.fullName, user.email, user.phoneCountryCode, user.phoneNumber, user.marketingOptIn,
+      user.marketingOptInAt, user.shopifyFinalConfirmedAt, user.createdAt, user.updatedAt, user.role,
+    ]),
+  ];
+  const csv = `${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
+  await audit(req.ecomUser!.clerkId, "users_exported", "Exported member contact details", { memberCount: users.length });
+  res.attachment("ecomstack-members.csv").type("text/csv; charset=utf-8").send(csv);
 });
 
 router.get("/admin/resources", async (_req, res): Promise<void> => { res.json(ListAdminResourcesResponse.parse((await db.select().from(resourcesTable)).map((r) => resourceDto(r, r.coverAssetId ? `/api/assets/${r.coverAssetId}/cover` : "")))); });

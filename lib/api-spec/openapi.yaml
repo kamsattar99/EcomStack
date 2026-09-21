@@ -603,6 +603,33 @@
         }
       }
     },
+    "/admin/users/export": {
+      "get": {
+        "operationId": "exportAdminUsers",
+        "tags": [
+          "ecomstack"
+        ],
+        "responses": {
+          "200": {
+            "description": "Admin-only member export in CSV format",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Access denied"
+          }
+        }
+      }
+    },
     "/admin/resources": {
       "get": {
         "operationId": "listAdminResources",

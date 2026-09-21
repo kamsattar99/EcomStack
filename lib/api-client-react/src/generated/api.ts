@@ -1301,6 +1301,77 @@ export function useGetAdminOverview<TData = Awaited<ReturnType<typeof getAdminOv
 
 
 
+export const getExportAdminUsersUrl = () => {
+
+
+
+
+  return `/api/admin/users/export`
+}
+
+export const exportAdminUsers = async ( options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getExportAdminUsersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportAdminUsersQueryKey = () => {
+    return [
+    `/api/admin/users/export`
+    ] as const;
+    }
+
+
+export const getExportAdminUsersQueryOptions = <TData = Awaited<ReturnType<typeof exportAdminUsers>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportAdminUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportAdminUsersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportAdminUsers>>> = ({ signal }) => exportAdminUsers({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportAdminUsers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportAdminUsersQueryResult = NonNullable<Awaited<ReturnType<typeof exportAdminUsers>>>
+export type ExportAdminUsersQueryError = ErrorType<void>
+
+
+
+export function useExportAdminUsers<TData = Awaited<ReturnType<typeof exportAdminUsers>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportAdminUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportAdminUsersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getListAdminResourcesUrl = () => {
 
 

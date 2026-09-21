@@ -324,6 +324,9 @@ export const GetAdminOverviewResponse = zod.object({
 })
 
 
+export const ExportAdminUsersResponse = zod.unknown()
+
+
 export const ListAdminResourcesResponseItem = zod.object({
   "id": zod.string(),
   "slug": zod.string(),

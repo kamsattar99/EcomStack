@@ -2,7 +2,7 @@ import { useGetAdminOverview } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Users, MousePointerClick, CheckCircle, FileText, Download, HelpCircle, Activity, FilePlus2, Tags } from "lucide-react";
+import { Users, MousePointerClick, CheckCircle, FileText, Download, HelpCircle, Activity, FilePlus2, Tags, UserRound } from "lucide-react";
 
 export default function AdminOverviewPage() {
   const { data: overview, isLoading } = useGetAdminOverview();
@@ -60,6 +60,29 @@ export default function AdminOverviewPage() {
           );
         })}
       </div>
+
+        <Card className="mb-8 border-primary/20 bg-primary/[0.03] shadow-sm">
+          <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                <UserRound className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-primary">Member contacts</p>
+                <h2 className="mt-1 text-2xl font-serif font-medium">{overview.registeredUsers.toLocaleString()} registered {overview.registeredUsers === 1 ? "user" : "users"}</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Download an admin-only CSV with names, email addresses, phone details, marketing consent, Shopify confirmation, and sign-up dates.</p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button asChild variant="outline">
+                <Link href="/admin/users"><Users className="mr-2 h-4 w-4" />View members</Link>
+              </Button>
+              <Button asChild>
+                <a href="/api/admin/users/export"><Download className="mr-2 h-4 w-4" />Export CSV</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
       <div className="grid lg:grid-cols-2 gap-8">
         <Card className="shadow-sm">

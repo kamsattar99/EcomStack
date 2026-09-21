@@ -90,6 +90,21 @@ export default function ResourceDetailPage() {
     }
   };
 
+  const handleSkillDownload = () => {
+    if (!detail || detail.resource.type !== "Skill" || !content?.content) return;
+    const file = new Blob([content.content], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(file);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${detail.resource.slug}.md`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    recordActivity.mutate({ slug, data: { action: "download" } });
+    toast({ title: "Skill downloaded", description: `${detail.resource.slug}.md is ready to use.` });
+  };
+
   if (isLoadingResource) {
     return <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6"><Skeleton className="h-5 w-32" /><div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_270px]"><div className="space-y-5"><Skeleton className="h-10 w-3/4" /><Skeleton className="h-6 w-full" /><Skeleton className="h-[420px] rounded-2xl" /></div><Skeleton className="h-72 rounded-2xl" /></div></div>;
   }
@@ -134,7 +149,7 @@ export default function ResourceDetailPage() {
           ) : (
             <>
               <section className="resource-content rounded-2xl border border-[#dce7dd] bg-white shadow-[0_10px_22px_rgba(25,60,54,.05)]">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4ece4] bg-[#FBFCFA] px-5 py-4 sm:px-6"><div className="flex items-center gap-2 text-sm font-semibold text-[#193C36]"><FileText className="h-4 w-4 text-[#2F765F]" /> Resource content</div>{(resource.type === "Prompt" || (resource.type === "Skill" && !hasAssets)) && <Button size="sm" onClick={handleCopy} className="h-9 rounded-lg bg-[#193C36] text-white hover:bg-[#2F765F]">{copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}{copied ? "Copied" : copyLabel}</Button>}</div>
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e4ece4] bg-[#FBFCFA] px-5 py-4 sm:px-6"><div className="flex items-center gap-2 text-sm font-semibold text-[#193C36]"><FileText className="h-4 w-4 text-[#2F765F]" /> Resource content</div><div className="flex flex-wrap gap-2">{resource.type === "Skill" && <Button size="sm" variant="outline" onClick={handleSkillDownload} className="h-9 rounded-lg border-[#cbdacb] text-[#193C36] hover:bg-[#E8F1E6]"><Download className="mr-2 h-4 w-4" />Download .md</Button>}{(resource.type === "Prompt" || (resource.type === "Skill" && !hasAssets)) && <Button size="sm" onClick={handleCopy} className="h-9 rounded-lg bg-[#193C36] text-white hover:bg-[#2F765F]">{copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}{copied ? "Copied" : copyLabel}</Button>}</div></div>
                 <div className="prose max-w-none break-words px-5 py-6 text-[#26382f] prose-headings:font-serif prose-headings:text-[#193C36] prose-p:leading-7 prose-a:text-[#2F765F] prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:bg-[#193C36] prose-pre:text-[#E8F1E6] sm:px-7 sm:py-8"><ReactMarkdown>{content.content}</ReactMarkdown></div>
                 {copyError && <div role="alert" className="mx-5 mb-6 flex gap-2 rounded-xl border border-[#ead2cb] bg-[#fff8f6] p-3 text-sm leading-6 text-[#7a4b40] sm:mx-7"><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /> Copying is unavailable in this browser. Select the resource content above and copy it manually.</div>}
               </section>

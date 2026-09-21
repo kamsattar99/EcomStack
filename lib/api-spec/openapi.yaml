@@ -2821,6 +2821,7 @@
             "type": "string",
             "enum": [
               "copy",
+              "download",
               "view"
             ]
           }

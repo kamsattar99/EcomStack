@@ -528,6 +528,7 @@ export type ActivityInputAction = typeof ActivityInputAction[keyof typeof Activi
 
 export const ActivityInputAction = {
   copy: 'copy',
+  download: 'download',
   view: 'view',
 } as const;
 
